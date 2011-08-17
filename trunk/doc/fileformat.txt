@@ -1,0 +1,128 @@
+FILE FORMATS
+^^^^^^^^^^^^
+
+note: there may be inaccuracies in this document. refer to the converter
+source code (see fileops.c) if unsure about anything.
+
+
+
+komposter .ksyn synthesizer file format (iff-like but small-endian for intel)
+
+offset	length	descr
+---------------------------------------------------------
+0		4	"KSYN"
+4		4	size of data in bytes
+
+--- data starts ---
+0		4	number of modules stored (m)
+4		4	reserved
+8		128	synthesizer name (zero-terminated string)
+
+--- module data repeated m times ---
+0		4	type
+4		64	label
+68		4*4	inputs
+84		4	x position (float)
+88		4	y position (float)
+92		4	active
+96		4	output active
+100		4	input active
+104		6*4	reserved
+128
+
+
+
+
+patch bank chunk (KBNK) follows KSYN
+
+offset	length	descr
+---------------------------------------------------------
+0		4	"KBNK"
+4		4	size of data in bytes (multiple of 4)
+
+--- data starts ---
+8		4	number of patches in bank (np)
+12		4	length of the signal stack (sl)
+
+--- patch repeated np times ---
+0       	128	name of the patch
+128		sl*4	signal stack in module indexes
+128+sl*4	sl*4	modulator values in stack order
+128+sl*8	sl*4	modulator precision quantifiers
+
+
+
+
+pattern data chunk (KPAT)
+
+offset	length	descr
+---------------------------------------------------------
+0		4	"KPAT"
+4		4	size of data in bytes
+
+--- data starts ---
+8		4	length of pattern in measures (pl)
+12		pl*16*4	all 16th notes in pattern (32bits each)
+
+
+
+
+sequencer data chunk (KSEQ)
+
+offset	length	descr
+---------------------------------------------------------
+0		4	"KSEQ"
+4		4	size of data in bytes
+
+--- data starts ---
+8		4	number of channels (ch)
+12		4	song length in measures (sl)
+16		4	beats per minute
+
+20		ch*4	synthesizer assignments and flags for channels
+20+ch*4		ch*sl*4	pattern numbers for channels
+..		ch*sl*4	repeat counts for channels
+		ch*sl*4	transpose values for channels
+		ch*sl*4 pattern patch assignments for channels
+
+
+
+
+
+
+song container chunk (KSNG)
+
+0		4	"KSNG"
+4		4	size of data in bytes (ds)
+
+--- data starts ---
+8		4	number of pattern chunks
+12		4	number of synthesizer and patch bank chunks
+16		n	nested KSEQ, KPAT, KSYN and KBNK chunks
+
+ds-12		4	crc32 checksum of data (excluding checksum itself)
+
+
+
+
+NOTES
+^^^^^
+
+- a KSNG chunk must contain one and only one KSEQ chunk.
+
+- there must be a KBNK chunk for each KSYN chunk included. the KSYN and KBNK
+  chunks are interleaved inside the file so that the KBNK applies to the KSYN
+  chunk prior to it.
+
+- patterns and synthesizers are numbered according to the order their chunks
+  are stored within the KSNG chunk.
+
+- KSNG files are stored to disk as .ksong files
+
+- synthesizers are stored to disk as .ksyn files, which are actually composed
+  of a KSYN chunk and a KBNK chunk immediately following it. when a synth is
+  loaded from disk, its patch bank is loaded at the same time.
+
+- the least significant byte of the synthesizer assignments in KSEQ is the
+  synthesizer number, bits 31-8 are flags such as the restart bits.
+

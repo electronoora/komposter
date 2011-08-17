@@ -1,0 +1,24 @@
+r350 | jh | 2011-04-06
+
+- added custom GLUT framework
+
+------------------------------------------------------------------------
+r317 | jh | 2010-10-22 09:19:59 +0300 (Fri, 22 Oct 2010)
+
+- added live playback in sequencer
+- fixed 'select all' behavior in sequencer
+- added keyboard shortcuts for 'select all' and 'clear selection'
+  in sequencer
+
+
+------------------------------------------------------------------------
+r314 | jh | 2010-09-22 00:27:08 +0300 (Wed, 22 Sep 2010)
+
+- fixed compatibility with 10.5.x
+
+
+------------------------------------------------------------------------
+r308 | jh | 2010-09-10 11:22:34 +0300 (Fri, 10 Sep 2010)
+
+- first public release
+
