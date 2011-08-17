@@ -1,0 +1,554 @@
+Komposter v2.0                              by Firehawk/The Digital Artists
+---------------------------------------------------------------------------
+
+Komposter is a lightweight music composing system intended mainly to be
+used in applications where the size of the executable must be minimized,
+such as 4K and 64K intros. It allows a musician to create a tune, send it
+to the coder who can then convert it directly into source code for 
+compiling into an executable.
+
+Originally, Komposter was developed only for our internal use and the first
+version was used while making our 4k intro Kraken for Assembly 2009. It ran
+in a terminal window using ncurses and didn't provide any way of listening
+to the song, apart from compiling the intro and running it. Also, as editing
+the instruments and patterns involved typing hexadecimal digits, it was not
+a particularly user-friendly experience unless the user is a coder. And you
+do know what usually happens when coders make music... :)
+
+Anyway, version 2 is a complete departure from the fixed synthesizer
+approach used in the first one. This time, the sound synthesis is done by
+using a fully modular "virtual analog" method, where the composer can build
+the synthesizers from scratch using simple basic building blocks. This 
+minimizes the amount of code required and relies more on data, which can be
+compressed more effectively.
+
+Using simple components also allows the composer to create sounds using
+different methods of synthesis; additive and subtractive, FM and AM.
+
+A simple pattern-based sequencer is used to create songs which use up to 24
+voices, each of which can use a different synthesizer. Each synthesizer can
+be programmed with a number of patches that can be changed between patterns.
+
+The user interface for Komposter is built on top of OpenGL, so it can easily
+be ported across platforms. It's organized into four pages: Synthesizers,
+Patches, Patterns and Sequencer. Use the buttons labeled 1-4 on the lower
+right corner or F1-F4 keys on your keyboard to switch between pages.
+
+
+
+1 SYNTHESIZERS
+^^^^^^^^^^^^^^
+
+The synthesizers in Komposter are built using a palette of basic components
+called modules. Once a synthesizer has been built, it can then be used to
+create actual instrument patches on the second page.
+
+Up to 64 modules can be used in a single synthesizer and signals between
+them are routed using virtual patch cables. For example, a very simple
+synthesizer might have an oscillator, an envelope generator, an amplifier
+to combine these two and a few "knobs" to set envelope parameters.
+
+Create new modules by either pressing 'M' or clicking the button labeled
+'M'. A module palette will appear and clicking a module on it will create a
+new instance of it to your synthesizer. You can drag the modules around the
+workspace to organize them.
+
+You can remove modules from your workspace by holding down the shift key and
+clicking on the module. Removing all modules and resetting the synthesizer
+to defaults can be done by clicking the 'C' button. Two clicks are required
+to confirm that you indeed want to reset the synthesizer.
+
+Each module has a number of white input nodes and a red output node. You
+can connect an output from one module to another by dragging from the red
+output node to a white input node. A patch cable will be created between
+the two nodes. One output can be connected to any number of inputs by
+dragging more patch cables from the same output. A patch cable can be
+removed by dragging the white input end and dropping it to an empty area.
+
+You can right-click any module to adjust whichever parameters it has. At
+this time, only the modules which have bluish gray knobs on them have
+user-adjustable parameters.
+
+Synthesizers, along with their patch banks, can be loaded and saved with the
+'S' and 'L' buttons. They are saved as files with a .ksyn extension.
+
+
+MODULES AND SIGNALS
+
+The modules in Komposter operate in a way like something between simple analog
+components of a modular synthesizer and a MIDI instrument. Most modules have
+a modulator data value which specifies how the module behaves. The simplest
+example is the knob, which outputs the value set into its modulator (the
+"position" of the knob). A more complex module such as the oscillator would
+allow the user to select a waveform by setting the modulator value. The
+modulator values can be set in instrument patches.
+
+Below is a more detailed description of each of the module types.
+
+  ............................................................................
+
+  00 Keyboard CV
+
+  Outputs the current pitch, set by the sequencer. The output is in
+  frequency (Hz) scale.
+
+
+  01 ADSR Envelope
+
+  The ADSR module generates an envelope with linear attack and
+  decay/release ramps. The ramps are set as a duration (sec). Sustain
+  is a percentage from 0 to 100.
+
+  To use the ADSR module as a simple ramp, you need two knobs. Connect
+  one knob to attack and set to a very short (not zero!) duration, the
+  other one to both decay and release and use it to set the desired
+  ramp duration.
+
+
+  02 VCO
+
+  The voltage-controlled oscillator is sort of like the ones in Roland
+  Juno series synthesizers. It has a main oscillator with several waveforms,
+  a pulse wave suboscillator an octave below the main osc, and a white noise
+  generator.
+
+  The modulator value for the VCO selects the waveform of the main
+  oscillator. The available waveforms are pulse, sawtooth, triangle and
+  sine.
+
+  The frequency input (in frequency scale) sets the pitch of the oscillator.
+  Typically you'd have the Keyboard CV connected directly to this input,
+  possibly with a vibrato added using an LFO.
+
+  The PWM input (in percentage scale) sets the pulse width of both the pulse
+  waveform of the main oscillator, as well as the suboscillator.
+
+  Suboscillator and noise inputs (in percentage scale) set the output level
+  of those two waveforms. Note that you can set them to over 100% if you
+  want to make them louder than the main oscillator. Just remember to scale
+  your levels back down before sending the audio to the output.
+
+
+  03 LFO
+
+  The low-frequency oscillator is used for creating, for example, long
+  filter sweeps, vibrato or other effects. Whereas the waveforms of the
+  VCO vary between -1 and 1, the LFO is only positive.
+
+  The modulator value for LFO selects the waveform between triangle and
+  sine.
+
+  The frequency input (in frequency scale) works just like in the VCO. The
+  amplitude input (usually in raw float scale) sets the maximum variation
+  and bias input (also in raw float) sets the base level.
+
+  An example for the LFO is using it for sweeping the PWM on a VCO. Connect
+  the LFO output to the PWM input on the VCO and three knobs to the LFO
+  inputs. Set the frequency knob to, say, 0.1 Hz - the bias knob to 0.1 and
+  amplitude knob to 0.8.
+
+
+  04 CV Knob
+
+  A knob is just a simple module which outputs its modulator value. You can
+  label the knobs using custom names to make it easier to remember what they
+  are used for.
+
+  You can also select the scale for a knob to make it easier to see what
+  they output. For example, Filter and LFO modules expect their frequency
+  input as a delta value which is a function of the sample rate. However,
+  when you set a knob's scale to 'Frequency (hz)', you can set the knob to,
+  say, 10 Hz and it is automatically converted to the corresponding delta
+  value 0.000226.
+
+
+  05 Amplitude modulation
+
+  This module simply takes two inputs and multiplies them together into the
+  output. Typically, you'd use this with the outputs of a VCO and an ADSR
+  envelope.
+
+  The AM module, however, happens to function also as a ring modulator when
+  you give it the outputs of two VCOs. Slightly detuning one VCO before 
+  ring modulating them creates very interesting sounds.
+
+
+  06 Mixer
+
+  A mixer simply takes up to four inputs and adds them together. It can
+  be used for both audio and CV signals as it doesn't clip the output.
+
+  An example would be feeding the outputs of an ADSR envelope, a knob
+  and an LFO to a mixer - then feeding the output of the mixer to the
+  cutoff of a filter.
+
+
+  07 Filter
+
+  A 12db/oct state variable low-/band-/highpass filter. The filtering is
+  applied to the signal connected to the input. The modulator selects the
+  operating mode of the filter.
+
+  Cutoff input (in frequency scale) sets the filter cutoff and resonance
+  sets the amount of resonation applied (percentage scale).
+
+
+  08 Lowpass filter
+
+  A 24db/oct resonant lowpass filter. Functions exactly like the state
+  variable filter, but in only lowpass mode.
+
+
+  09 Delay
+
+  Delays the input signal by a duration before outputting it again. The
+  duration and loop inputs (in duration scale) set the length of the delay
+  and the length of the "tape loop".
+
+  When the loop input is not connected, a loop length of 3 seconds is
+  assumed.
+
+  The feedback input sets the percentage or how much of the output is fed
+  back into the input. When feedback is zero, the delay operates as a single
+  tap delay.
+
+  The modulator for the delay selects the operating mode between comb and
+  allpass filter. Comb filter mode uses only feedback, whereas allpass
+  filter uses both feedback and feedforward, ie. a percentage of the input
+  is fed directly to the output bypassing the delay.
+
+  Delay modules can be used for constructing a number of different effects,
+  including flanger, chorus and reverb.
+
+
+  10 Scaler knob
+
+  The scaler knob simply multiplies the input signal with its modulator
+  value. Basically, it operates like a volume knob but can also be used
+  to scale control signals like frequencies.
+
+  Like the CV knob, the scaler knob can be labeled and set to a scale.
+
+
+  11 Resample
+
+  Functions like a simple sample-and-hold effect, resampling the input
+  frequency down to a different frequency.
+
+  The sample rate input (in frequency scale) sets the sample rate to which
+  the input signal will be downlsampled to.
+
+
+  12 Audio switch
+
+  Selects one of the inputs and feeds it to the output. The modulator
+  selects the input signal used.
+
+  This module will most likely be removed from future versions.
+
+
+  13 Distort
+
+  Amplifies the input signal by the amount set using the distortion input
+  (in percentage scale) and outputs the resulting signal with any peaks
+  above 1.0 and below -1.0 clipped.
+
+
+  14 Accent
+
+  This module is controlled by the sequencer and whenever a note with an
+  accent mark is triggered, the accent module will output the value set into
+  the modulator. On non-accented notes, the accent module outputs zero.
+  Think of it as a two-step velocity that you can choose to modulate other
+  signals.
+
+
+  15 Output
+
+  The audio signal fed into the output module is multiplied with the master
+  volume set into the modulator and then output into the buffer for
+  playback.
+
+  Note that since Komposter operates internally in floating point values,
+  you must adjust the master volume to bring the output signal to a level
+  between -1.0 and 1.0. If your output signal is too loud, you will hear
+  clicks or other undesired noises.
+
+  ............................................................................
+
+
+Knobs and scalers can be labeled with custom names to make them easier to
+identify. They are also automatically named when connected to another
+module.
+
+You may have also noticed that in the module descriptions, there are
+requirements on what "scale" should their inputs be. The knob and scaler
+modules can be set to display their setting on one of the following scales;
+
+  * Raw float : This is a raw 32-bit floating point number. Useful if you
+    know exactly what you want to feed to a module
+
+  * Frequency : The knob will be used to set a frequency, like an LFO rate
+    or a filter cutoff point. The value is set in Hertz, and raw output is
+    an accumulator delta value per sample.
+
+  * Frequency from tempo : As above, but set as a multiply of the song's
+    tempo. A setting of 1.0 on a 120bpm song will result in a 2 Hz rate.
+    This is very handy when you want to synchronize an LFO to beats.
+
+  * Duration : A duration in seconds. Used to set, for example, the delay
+    time and loop length on a delay module. Raw output is a number of
+    samples corresponding to the duration.
+
+  * Duration from tempo : As above, but as a fraction of the time between
+    two beats. A setting of 1.0 on a 120bpm song will result in a 0.5 sec
+    duration. Useful when synchronizing a delay module to beats.
+
+  * Ramp : A duration in seconds to ramp up a value. This is used on the
+    attack, decay and release inputs of an ADSR envelope. The length of
+    the ramp is set in seconds and the resulting raw output is an
+    accumulator delta value per sample.
+
+  * MIDI note : Use this to get a frequency corresponding a MIDI note
+    number. For example, a value of 69.0 will output a frequency of
+    440Hz which is the note A4. The raw output is an accumulator
+    delta value per sample, so it can be fed to a VCO, for example.
+
+  * Seminotes interval : When using multiple oscillators and detuning
+    detune them a number of semitones from the main pitch using scaler
+    modules, this scale is very useful. A setting of 7.0 will output
+    a frequency seven seminotes above the input frequency.
+
+  * Percentage : A percentage, so basically just the input divided by
+    100.0. Handy on, for example, VCO subosc and noise inputs.
+
+Note that if you change the tempo, the frequency or duration will remain the
+same, ie. it will be out-of-sync with the tempo. So check the patches if you
+make changes to the tempo.
+
+Unconnected inputs will receive a zero signal. For example, leaving the
+resonance input on a VCF unconnected would cause no resonance to be
+added to the filter's output.
+
+The KB CV can be left unconnected on, for example, drum synthesizers where
+the frequency is the same regardless of the note played. Also, if you don't
+use the Accent module, you can just leave it unconnected.
+
+
+
+2 PATCHES
+^^^^^^^^^
+
+Once the composer has built the synthesizers, they can be used for creating
+instrument patches on the second page. Komposter shows a list of all the modules
+in the synthesizer and their modulator data values. By adjusting the modulator
+values, the composer can change the sound produced by the synthesizer.
+
+Each synthesizer has its own patch bank which is saved along with the
+synthesizer. Up to 64 patches can be created per synthesizer.
+
+Just click on a module on the screen to either open a dialog box where you
+can type in the new modulator value or to toggle between the possible
+choices (eg. waveforms, filter modes, etc).
+
+You can select the synthesizer you're creating instruments for and the patch
+number from the buttons on the bottom of the window. You can also enter
+names for your instrument patches.
+
+On the modulator value dialog box, you can type the new value simply as a
+floating point number (use dot as the decimal separator). In addition to
+the modulator data value, each module has a precision setting
+which is used for telling how many bits of precision is actually required.
+
+For example, setting the precision to 24 bits would set eight least
+significant bits of the mantissa to zero. This improves the compressibility
+of the data and gives the composer control on how much precision is really
+needed. The less bits you need, the better the song should compress.
+
+When entering a new value, you will instantly see the actual value after it
+has been adjusted to the selected precision. Once you close the dialog, the
+adjusted value will be entered to the instrument and you can try it to see
+if it sounds good.
+
+You can either click on the piano keyboard to preview the instrument or use
+your keyboard to jam with it.
+
+
+
+3 PATTERNS
+^^^^^^^^^^
+
+Patterns are used to create short note sequences which are can be arranged
+into a full song using the sequencer. A pattern can be played in real-time
+using the selected synthesizer and patch. You can also leave the pattern
+playing, go to the synthesizer or patch page and tweak them, getting an
+instant aural feedback. Click the timecode button or hit spacebar to start
+and stop the pattern playback.
+
+Creating notes to a pattern is simple: just start dragging from where you
+want to start the note, and pull the note to its desired length and release
+the button. A note can be removed by pressing down the shift key and
+clicking on the note. The entire pattern can be cleared by clicking the 'C'
+button twice.
+
+Right-clicking the a note at its beginning will toggle accent on the note.
+It is denoted with a small '>' on top of it. You can choose how to use the
+accent information on the synthesizer page by connecting the accent module
+to your synthesizer.
+
+The buttons on the bottom of the page can be used to select the pattern
+being edited and how many measures long the pattern is. You can also choose
+which patch you want to use to preview the pattern and play it. Spacebar can
+be used to toggle preview on and off, as well as clicking the timecode
+button.
+
+You can also use the same keys as on the patch page to jam with the
+instrument. You'll also see the piano key highlighted on the pattern grid.
+
+
+
+4 SEQUENCER
+^^^^^^^^^^^
+
+The sequencer page is used to bind all the other three pages together by
+organizing patterns, synthesizers and instruments into a song.
+
+Start by using the buttons on the bottom of the screen to set how many
+channels you want to use, which tempo your song will be and how many
+measures long will the song be. You can, of course, adjust these later on.
+
+Click on the channel labels on the left edge of the window to assign a
+synthesizer to each channel. Since all synthesizers are monophonic, to play
+triad chords with a synthesizers, you'll need to assign the same synth to
+three channels.
+
+For each channel, you can individually set if you want the ADSR envelopes,
+VCOs and LFOs to be restarted whenever a new note is triggered. This is
+useful if you want to create LFO-controlled filter sweeps over a number
+of notes. If you notice clicking when notes are triggered during playback,
+try changing the restart settings for that channel.
+
+The sequencer is laid out on a grid where each square denotes one measure.
+Right-click on a square to add a pattern to that position. A dialog box will
+pop up, and you'll be able to select which pattern to play, how many times
+it will be repeated, how many semitones it will be transposed up or down and
+which instrument patch will be used to play it. Clicking on 'add pattern'
+will create the pattern onto the sequencer grid.
+
+A pattern on the grid can be dragged and dropped to move it to another
+position. Holding down shift while clicking a pattern will remove it from
+the sequencer. You can also right-click the pattern to see or edit it.
+
+Once you have patterns on your song, you can try to play a part of it
+to hear how it sounds. By moving the cursor on the timeline on the bottom of
+the grid, you'll see a dashed line move on the grid. Once positioned on
+where you want to start your playback, click and drag the shaded area along
+the timeline to set the duration for your preview.
+
+You can also right-click on the timeline afterwards to re-set the end of the
+preview to another location. This is useful if you want to render a clip
+that's longer than what you can see on the screen.
+
+The 'A' button selects your entire song and the 'C' button clears your
+selection.
+
+With an area selected, you can either click 'play' (or hit spacebar) to
+play the area immediately or click 'render' to render it to a buffer to
+listen to it and examine the waveform. 
+
+Clicking 'play' will start rendering the audio to memory and you'll see a
+gray vertical line moving as the render progresses. At the same time, the
+rendered audio is played back and the playback position is shown as a white
+vertical line. Click 'play' or press spacebar again to stop the playback.
+
+When clicking 'render', a dialog with a progress bar is shown as the audio
+clip is being rendered. Right-click on the dialog or hit esc to abort the
+rendering.
+
+Once the rendering is complete, you'll see a dialog box with the rendered
+audio displayed as a waveform. You can click on the timecode button or hit
+spacebar to start and stop the playback. You can also at any time click on
+the waveform to set the playback position. The button with an arrow left
+rewinds the playback to the start. Hit esc or right-click the dialog box to
+close it and return to the sequencer.
+
+As with synthesizers, the 'S' and 'L' -buttons will save and load the entire
+song, along with all its synthesizers, patches and patterns into a single
+file with a .ksong extension. These can be converted into source code and
+included to your own programs.
+
+If you want to start from scratch, clicking the 'N' button twice will clear
+everything from all four pages. Be careful not to click it by accident!
+
+
+
+FILE FORMATS
+^^^^^^^^^^^^
+
+The file formats used by Komposter are simple IFF-style formats using
+small-endian values. See the separate technical documentation for in-depth
+information on the chunks used.
+
+An external converter program is used to convert a .ksong -file into
+actual code that can be included into an intro. A reference implementation
+for outputting to NASM-compatible assembly source code is provided but given
+the nature of most 4K/64K intros, it may be useful for the coder to modify
+the converter to their own needs for best possible results.
+
+A music player in x86 assembly code is also provided to play the songs
+converted into NASM code. This is a reference implementation which can be
+used with the converter. To maintain some legibility, the code has not been
+aggressively size-optimized, so customizing the code to your own application
+will probably yield a lot of free bytes in a 4K intro.
+
+
+
+TIPS AND TRICKS
+^^^^^^^^^^^^^^^
+
+Chorus, flanger and phaser effects can all be accomplished with a simple
+construct involving a delay and an LFO. The input signal is fed into the
+delay and the LFO is used to modulate the delay time. The output from the
+delay is then mixed again with the "dry" input signal.
+
+For chorus, the LFO bias is usually set to around 20 to 30 milliseconds,
+and amplitude to 5 to 10 milliseconds. LFO frequency is typically below 3 Hz.
+For a richer chorus effect, it may be useful to add a second LFO which is
+either summed with the first one, or patched to modulate the frequency of
+the first one.
+
+A flanger is identical to a chorus, with the exception of using a slightly
+shorter delay time but still with an LFO modulating it. The delay us usually
+in the range of 1 to 10 milliseconds.
+
+Phaser is even more simplified, as it basically just mixes a slightly
+delayed version of the source signal to itself. The delay time is constant,
+so if an LFO is used, its amplitude can be set to zero and the delay time to
+the bias input.
+
+Other effects, such as a reverb, can be also accomplished by using delay
+modules. See the included example synth for an implementation of a Schroeder
+reverberator using six delays.
+
+
+
+COPYRIGHTS
+^^^^^^^^^^
+
+Komposter copyright (c) 2010-2011 Firehawk/TDA and licensed under the
+GNU General Public License version 2. See file 'doc/LICENSE'.
+
+Player and converter code copyright (c) 2010-2011 Firehawk/TDA and
+licensed on ter the MIT license, see http://www.opensource.org/licenses/mit-license.php  
+
+Portions of this software are copyright (c) 2010 The FreeType
+Project (www.freetype.org).  All rights reserved.
+
+OpenAL copyright (c) 2004 OpenAL Development Team
+
+GLUT copyright (c) 2000 Mark J. Kilgard
+
+078MKSD font by Masayuki Sato
+M42 Flight 721 font by Miffies (http://mfs.jp.org/)
+Acknowledge font by Aenigma (http://www.aenigmafonts.com/)
+
