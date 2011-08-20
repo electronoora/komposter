@@ -766,7 +766,7 @@ void synth_file_checkstate(void)
       // clicked ok, do stuff with the filename
       sprintf(fn, "%s", fd[fd_active].fullpath);
       if (fd_active==FD_SAVE) {
-        f=fopen(fn, "w");
+        f=fopen(fn, "wb");
         if (f) {
           r=save_chunk_ksyn(csynth, f);
           if (!r) {
@@ -786,7 +786,7 @@ void synth_file_checkstate(void)
       }
       if (fd_active==FD_LOAD) {
         synth_lockaudio();
-        f=fopen(fn, "r");
+        f=fopen(fn, "rb");
         if (f) {
           synth_clear(csynth);
           synth_stackify(csynth);

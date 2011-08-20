@@ -67,7 +67,7 @@ int load_ksong(char *filename)
 
   // clean up after the old song first
 
-  f=fopen(filename, "r");
+  f=fopen(filename, "rb");
   if (!f) {
     return FILE_ERROR_FOPEN;
   }
@@ -174,7 +174,7 @@ int save_ksong(char *filename)
   }
   datasize+=4; // checksum
   
-  f=fopen(filename, "w");
+  f=fopen(filename, "wb");
   if (!f) return FILE_ERROR_FOPEN;
 
   r=fwrite("KSNG", sizeof(char), 4, f);

@@ -28,7 +28,7 @@ ALenum format;
      
 unsigned long playpos;
 int audiomode=AUDIOMODE_COMPOSING; 
-int oldtick;
+int oldtick=-1;
 int audio_spinlock=0;
 int restarts=0;
 
@@ -207,7 +207,7 @@ int audio_process(short *buffer, long bufferlen)
   int i, j, m, mi, mt, ii, pkey;
   float signals[4], p, freq;
   short s;
-  long ticks, copylen;
+  long ticks=0, copylen;
   int voice, pattpos;
   void *buf;
   float *debugbuf;
@@ -367,7 +367,7 @@ long audio_render(void)
   int i, voice;
   int synth;
   int pattern, pattstart, pattpos;
-  long ticks;
+  long ticks=0;
   void *buf;
   short *buffer;
   long bufferlen, copylen;
@@ -580,7 +580,7 @@ int audio_exportwav(char *filename)
 
   w.wav_chunksize=36+render_bufferlen*2*2;
   w.wav_sub2chunksize=render_bufferlen*2*2;
-  f=fopen(filename, "w");
+  f=fopen(filename, "wb");
   fwrite(&w, sizeof(wavheader), 1, f);
   fwrite(render_buffer, sizeof(short), render_bufferlen*2, f);
   fclose(f);
