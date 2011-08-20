@@ -101,7 +101,7 @@ char *dotfile_getvalue(char *key) {
   
   for (i=0;i<255;i++) {
     if (configdata[i].key) {
-      if (!strcmp(configdata[i].key, key)) return configdata[i].value;
+      if (!strncmp(configdata[i].key, key, 511)) return configdata[i].value;
     }
   }
   return NULL;
@@ -113,10 +113,11 @@ int dotfile_setvalue(char *key, char *value) {
   
   for (i=0;i<255;i++) {
     if (configdata[i].key) {
-      if (!strcmp(configdata[i].key, key)) {
-        if (configdata[i].value) free(configdata[i].value);
-        configdata[i].value=malloc(strlen(value));
-        strcpy(configdata[i].value, value);
+      if (!strncmp(configdata[i].key, key, 511)) {
+        //if (configdata[i].value) free(configdata[i].value);
+        //configdata[i].value=malloc(strlen(value));
+        if (!configdata[i].value) configdata[i].value=malloc(512);
+        strncpy(configdata[i].value, value, 511);
         // printf("replaced key %s with value %s in index %d\n",key,value,i);
         return i;
       }
@@ -124,10 +125,10 @@ int dotfile_setvalue(char *key, char *value) {
   }
   for (i=0;i<255;i++) {
     if (!configdata[i].key) {
-      configdata[i].key=malloc(strlen(key));
-      configdata[i].value=malloc(strlen(value));
-      strcpy(configdata[i].key, key);
-      strcpy(configdata[i].value, value);
+      configdata[i].key=malloc(512); //strlen(key));
+      configdata[i].value=malloc(512); //strlen(value));
+      strncpy(configdata[i].key, key, 511);
+      strncpy(configdata[i].value, value, 511);
       // printf("stored new key %s with value %s to index %d\n",key,value,i);
       return i;
     }

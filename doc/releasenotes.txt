@@ -58,6 +58,8 @@ What's new in r332 (nov 6 2010):
 
 
 Issues requiring resolution before 2.0 rc:
+- on page2, closing edit dialog with 'esc' doesn't save the value but
+  rightclick (correctly) does
 - player doesn't implement supersaw yet
 - player doesn't implement delay loop length
 - write proper documentation with illustration and examples
