@@ -308,7 +308,20 @@ void calc_tables() {
   }
 }
 
+int is_dir(const char *path)
+{
+	struct stat st;
 
+	if(stat(path, &st) == 0)
+	{
+		if(st.st_mode & S_IFDIR != 0)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -331,12 +344,18 @@ int main(int argc, char **argv)
     CFStringGetCString(respathref, respath, 512, kCFStringEncodingISOLatin1);
   }
   strncat(respath, "/Contents/Resources/", 512); // append the resource dir
-#endif
-#ifdef __linux__
+#else
   respath=malloc(512);
 #ifdef RESOURCEPATH
-  //printf("resourcepath is %s\n", RESOURCEPATH);
-  strncpy(respath, RESOURCEPATH, 512);
+	if(is_dir(RESOURCEPATH))
+	{
+		strncpy(respath, RESOURCEPATH, 512);
+	}
+	else
+	{
+		fprintf(stderr, "'%s' not found, trying relative path\n", RESOURCEPATH);
+		strncpy(respath, "resources/", 512);
+	}
 #else
   strncpy(respath, "resources/", 512);
 #endif

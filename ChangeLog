@@ -19,6 +19,10 @@ NOTES WHEN COMPILING FORM SOURCE:
   pre-built versions of freetype 2.3.12 for OS X and Linux in the 'resources'
   directory of the source package.
 
+What's new in r??? (? ? 2011):
+- autoconf scripts for generic compilation on non-OSX environment
+- check for resources in local path first, this allows for using the program
+  directly from the source directory without installing
 
 What's new in r384 (aug 17 2011):
 - window size increased a bit - still fits comfortably on a 13" macbook
