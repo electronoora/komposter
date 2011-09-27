@@ -15,10 +15,7 @@
   #include <GLUT/glut.h>
   #include <OpenAL/al.h>
   #include <OpenAL/alc.h>
-#endif
-
-// most Linux distros
-#ifdef __linux__
+#else // BSD, Linux, etc.
   #include <GL/glut.h>
   #include <AL/al.h>
   #include <AL/alc.h>
