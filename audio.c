@@ -91,7 +91,7 @@ float localdata[MAX_CHANNELS][MAX_MODULES][16];  // 16 dwords of local data for 
 
 int audio_initialize(void)
 {
-  int error, i, j;
+  int error, i;
   short data[AUDIOBUFFER_LEN*2]; //16bit stereo
 
   playpos=0;
@@ -152,7 +152,7 @@ int audio_isplaying()
 }
 
 
-int audio_release(void)
+void audio_release(void)
 {
   ALuint buffer;
   int queued;
@@ -168,7 +168,6 @@ int audio_release(void)
 
 int audio_update(int cs)
 {
-  int i;
   int processed, active;
   ALuint buffer;
   short data[AUDIOBUFFER_LEN*2]; //16bit stereo
@@ -204,13 +203,12 @@ int audio_update(int cs)
 // play into a buffer. bufferlen = number of 16-bit stereo samples
 int audio_process(short *buffer, long bufferlen)
 {
-  int i, j, m, mi, mt, ii, pkey;
-  float signals[4], p, freq;
+  int i, m, mi=0, mt, ii, pkey;
+  float signals[4], p;
   short s;
   long ticks=0, copylen;
   int voice, pattpos;
   void *buf;
-  float *debugbuf;
 
   // clear the buffer
   for(i=0;i<bufferlen*2;i++) buffer[i]=0;
@@ -361,8 +359,8 @@ int audio_process(short *buffer, long bufferlen)
 
 long audio_render(void)
 {
-  int j, m, mi, mt, ii, pkey;
-  float signals[4], p, freq;
+  int m, mi=0, mt, ii, pkey;
+  float signals[4], p;
   short s;
   int i, voice;
   int synth;
@@ -370,7 +368,7 @@ long audio_render(void)
   long ticks=0;
   void *buf;
   short *buffer;
-  long bufferlen, copylen;
+  long bufferlen;
 
   // render a block of audio
   bufferlen=AUDIOBUFFER_LEN;  
@@ -564,10 +562,10 @@ int audio_exportwav(char *filename)
   FILE *f;
   wavheader w;
   
-  strncpy(&w.wav_chunkid, "RIFF", 4);
+  strncpy((char*)&w.wav_chunkid, "RIFF", 4);
   w.wav_chunksize=0;
-  strncpy(&w.wav_format, "WAVE", 4);
-  strncpy(&w.wav_sub1chunkid, "fmt ", 4);
+  strncpy((char*)&w.wav_format, "WAVE", 4);
+  strncpy((char*)&w.wav_sub1chunkid, "fmt ", 4);
   w.wav_sub1chunksize=16;
   w.wav_audioformat=1;
   w.wav_numchannels=2;
@@ -575,7 +573,7 @@ int audio_exportwav(char *filename)
   w.wav_byterate=44100*2*2;
   w.wav_blockalign=2*2;
   w.wav_bitspersample=16;
-  strncpy(&w.wav_sub2chunkid, "data", 4);
+  strncpy((char*)&w.wav_sub2chunkid, "data", 4);
   w.wav_sub2chunksize=0;
 
   w.wav_chunksize=36+render_bufferlen*2*2;
@@ -584,5 +582,6 @@ int audio_exportwav(char *filename)
   fwrite(&w, sizeof(wavheader), 1, f);
   fwrite(render_buffer, sizeof(short), render_bufferlen*2, f);
   fclose(f);
+  return 0;
 }
 

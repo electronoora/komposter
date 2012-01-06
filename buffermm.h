@@ -22,6 +22,6 @@
 
 void kmm_init(void);
 void *kmm_alloc(unsigned long bytes, int voice, int synth, int module, int modtype);
-int *kmm_gcollect(void);
+void kmm_gcollect(void);
 
 #endif

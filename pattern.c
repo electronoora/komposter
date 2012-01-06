@@ -138,7 +138,6 @@ int pattern_cursorpos(int x, int y, int *note)
 
 void pattern_mouse_hover(int x, int y)
 {
-  int m;
 
   // test buttons
   patt_ui[B_PREV]=hovertest_box(x, y, 14,  DS_HEIGHT-14, 16, 16);
@@ -172,7 +171,7 @@ void pattern_mouse_hover(int x, int y)
 
 void pattern_mouse_drag(int x, int y)
 {
-  int i,m,note;
+  int m,note;
   float f, cos, cip, sbw, slw;
 
   // dragging a new note, paint all cells from drag point to current cell
@@ -199,9 +198,7 @@ void pattern_mouse_drag(int x, int y)
 
 void pattern_mouse_click(int button, int state, int x, int y)
 {
-  int i,m,note,j,mi,mt;
-  int patt_playing;
-  float freq;
+  int i,m;
   char tmps[256];
 
   if (button==GLUT_LEFT_BUTTON) {
@@ -315,9 +312,7 @@ void pattern_mouse_click(int button, int state, int x, int y)
 // keyboard callback
 void pattern_keyboard(unsigned char key, int x, int y)
 {
-  int i,j,m,pkey;
-  int mi, mt;
-  float freq;
+  int i,pkey;
 
   switch (key) {
     case ' ': pattern_toggleplayback(); return; break;

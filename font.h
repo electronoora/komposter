@@ -18,6 +18,6 @@
 #include FT_FREETYPE_H
 
 int font_init(void);
-int render_text(char *text, float x, float y, int fontnr, unsigned long color, int align);
+void render_text(char *text, float x, float y, int fontnr, unsigned long color, int align);
 
 #endif

@@ -38,7 +38,7 @@
 
 int audio_initialize(void);
 int audio_isplaying(void);
-int audio_release(void);
+void audio_release(void);
 int audio_update(int cs);
 int audio_process(short *buffer, long bufferlen);
 

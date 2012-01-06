@@ -68,7 +68,7 @@ int font_init(void)
 {
   char fullpath[512];
   int err, i, j, c, rc, f, texw, texh;
-  unsigned long p, *bm;
+  unsigned long p;
   FT_GlyphSlot slot;
 
   // init freetype
@@ -143,17 +143,16 @@ int font_init(void)
 // render text using a preloaded face/size
 // fontnr is preloaded face/size number, color is argb
 // align 0=left, 1=center, 2=right
-int render_text(char *text, float x, float y, int fontnr, unsigned long color, int align)
+void render_text(char *text, float x, float y, int fontnr, unsigned long color, int align)
 {
-  unsigned long p, sw;
-  int i, j, n;
+  unsigned long sw, n;
   float xp, yp;
 
   // calc text bitmap width (note: linefeeds fuck up center and right alignment)
   sw=0; n=0;
   while(n<strlen(text))
   {
-    sw+=font_advance[fontnr][text[n]];
+    sw+=font_advance[fontnr][(int)text[n]];
     n++;
   }
 
@@ -164,25 +163,25 @@ int render_text(char *text, float x, float y, int fontnr, unsigned long color, i
   yp=y; n=0;
   while(n<strlen(text))
   {
-    if (text[n]=='\n') { yp+=fontsize[fontnr]+2; xp=x; n++; continue; }
+    if ((int)text[n]=='\n') { yp+=fontsize[fontnr]+2; xp=x; n++; continue; }
     glEnable(GL_TEXTURE_2D);
     glColor4ub((color>>16)&0xff, (color>>8)&0xff, color&0xff, color>>24);
-    glBindTexture(GL_TEXTURE_2D, font_texture[fontnr][text[n]]);
+    glBindTexture(GL_TEXTURE_2D, font_texture[fontnr][(int)text[n]]);
     glBegin(GL_QUADS);
-      glTexCoord2f(0, font_vcoord[fontnr][text[n]]);
-      glVertex2f(xp+font_xoffset[fontnr][text[n]], yp+font_yoffset[fontnr][text[n]]);
-      glTexCoord2f(font_ucoord[fontnr][text[n]], font_vcoord[fontnr][text[n]]);
-      glVertex2f(xp+font_xoffset[fontnr][text[n]]+font_width[fontnr][text[n]], yp+font_yoffset[fontnr][text[n]]);
-      glTexCoord2f(font_ucoord[fontnr][text[n]], 0);
-      glVertex2f(xp+font_xoffset[fontnr][text[n]]+font_width[fontnr][text[n]],
-               yp+font_yoffset[fontnr][text[n]]+font_height[fontnr][text[n]]);
+      glTexCoord2f(0, font_vcoord[fontnr][(int)text[n]]);
+      glVertex2f(xp+font_xoffset[fontnr][(int)text[n]], yp+font_yoffset[fontnr][(int)text[n]]);
+      glTexCoord2f(font_ucoord[fontnr][(int)text[n]], font_vcoord[fontnr][(int)text[n]]);
+      glVertex2f(xp+font_xoffset[fontnr][(int)text[n]]+font_width[fontnr][(int)text[n]], yp+font_yoffset[fontnr][(int)text[n]]);
+      glTexCoord2f(font_ucoord[fontnr][(int)text[n]], 0);
+      glVertex2f(xp+font_xoffset[fontnr][(int)text[n]]+font_width[fontnr][(int)text[n]],
+               yp+font_yoffset[fontnr][(int)text[n]]+font_height[fontnr][(int)text[n]]);
       glTexCoord2f(0, 0);
-      glVertex2f(xp+font_xoffset[fontnr][text[n]],
-               yp+font_yoffset[fontnr][text[n]]+font_height[fontnr][text[n]]);
+      glVertex2f(xp+font_xoffset[fontnr][(int)text[n]],
+               yp+font_yoffset[fontnr][(int)text[n]]+font_height[fontnr][(int)text[n]]);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     
-    xp+=font_advance[fontnr][text[n]];
+    xp+=font_advance[fontnr][(int)text[n]];
     n++;
   }
 }

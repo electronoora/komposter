@@ -146,21 +146,21 @@ void patch_mouse_hover(int x, int y)
         // black key only to right:
         case 0:
         case 3:
-          if ( (xoct-(key*16))>10 ) cpkey=cpkey=octave*12 + bk[key];
+          if ( (xoct-(key*16))>10 ) cpkey=octave*12 + bk[key];
           break;
       
         // black to right and left
         case 1:
         case 4:
         case 5:
-          if ( (xoct-(key*16))>10) cpkey=cpkey=octave*12 + bk[key];
-          if ( (xoct-(key*16))<6 ) cpkey=cpkey=octave*12 + pk[key];
+          if ( (xoct-(key*16))>10) cpkey=octave*12 + bk[key];
+          if ( (xoct-(key*16))<6 ) cpkey=octave*12 + pk[key];
           break;
           
         // black key to left
         case 2:
         case 6:
-          if ( (xoct-(key*16))<6 ) cpkey=cpkey=octave*12 + pk[key];
+          if ( (xoct-(key*16))<6 ) cpkey=octave*12 + pk[key];
           break;
         
       }
@@ -175,8 +175,7 @@ void patch_mouse_drag(int x, int y)
 
 void patch_mouse_click(int button, int state, int x, int y)
 {
-  int i,m,mi,mt,t;
-  float freq;
+  int mi,mt,t;
 
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
@@ -290,9 +289,7 @@ void patch_mouse_click(int button, int state, int x, int y)
 // keyboard callback
 void patch_keyboard(unsigned char key, int x, int y)
 {
-  int m, j, i, pkey;
-  int mi, mt;
-  float freq;
+  int i, pkey;
   
   if (patchkbfocus==B_PATCHNAME) {
     // edit patch name
@@ -444,7 +441,7 @@ void patch_draw(void)
 //
 void patch_draw_modulator(void)
 {
-  int i,m,mi,mt,j;
+  int i,mi,j;
   char tmps[128], label[128], raws[128];
   unsigned long fmask, *fptr;
   float rf, f;
@@ -494,8 +491,6 @@ void patch_draw_modulator(void)
 
 void patch_modulator_hover(int x, int y)
 {
-  int i;
-
   modulator_ui[B_MOD_ADDPREC]=hovertest_box(x, y, (DS_WIDTH/2)+96, (DS_HEIGHT/2)+2, 16, 16);
   modulator_ui[B_MOD_DECPREC]=hovertest_box(x, y, (DS_WIDTH/2)-28,  (DS_HEIGHT/2)+2 , 16, 16);
 
@@ -611,6 +606,7 @@ float knob_scale2float(int scale, float value)
     case SCALE_MIDI_NOTE: return 8.1757989156 * pow(1.059463094, value) / OUTPUTFREQ;
     case SCALE_NOTE_INTERVAL: return pow(1.059463094, value);
   }
+  return 0.0;
 }
 
 float knob_float2scale(int scale, float value)
@@ -626,4 +622,5 @@ float knob_float2scale(int scale, float value)
     case SCALE_MIDI_NOTE: return 17.31234049667*log(0.12231220586*value*OUTPUTFREQ);
     case SCALE_NOTE_INTERVAL: return 17.31234049667*log(value);
   }
+  return 0.0;
 }

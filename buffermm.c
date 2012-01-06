@@ -105,10 +105,9 @@ void *kmm_alloc(unsigned long len, int voice, int synth, int module, int modtype
 
 
 
-int *kmm_gcollect(void)
+void kmm_gcollect(void)
 {
   int i;
-  int synth;
 
   // scan the kmm table and free any buffers which are no longer being used
   for(i=0;i<KMM_ENTRIES;i++) {
