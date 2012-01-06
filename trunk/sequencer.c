@@ -223,7 +223,7 @@ void sequencer_toggleplayback() {
 // grid position clicked
 int sequencer_ispattern(int ch, int clickpos)
 {
-  int i, j;
+  int i;
 
   for(i=clickpos;i>=0;i--) {
     if (seq_pattern[ch][i]>=0) {
@@ -239,7 +239,7 @@ int sequencer_ispattern(int ch, int clickpos)
 // starting position of the pattern which spans to clicked position
 int sequencer_patternstart(int ch, int clickpos)
 {
-  int i,j;
+  int i;
 
   for(i=clickpos;i>=0;i--) {
     if (seq_pattern[ch][i]>=0) {
@@ -686,7 +686,7 @@ void sequencer_keyboard(unsigned char key, int x, int y)
 
 void sequencer_draw(void)
 {
-  int i, j, k, sk, sx, sl, osl, pl, ticks;
+  int i, j, k, sk, sx, sl, osl, pl;
   float f, fs, fe;
   char tmps[128];
 
@@ -1044,10 +1044,7 @@ void sequencer_draw(void)
 //
 void sequencer_draw_pattern(void)
 {
-  int i,m,mi,mt,j;
-  char tmps[128], label[128];
-  unsigned long fmask, *fptr;
-  float rf;
+  char tmps[128];
 
   draw_textbox((DS_WIDTH/2), (DS_HEIGHT/2), 150, 240, "", 0);
   if (seq_add_editmode) { sprintf(tmps, "Edit pattern (ch%02d)",seq_hover_ch+1); } else { sprintf(tmps, "Add pattern (ch%02d)", seq_hover_ch+1); }
@@ -1099,7 +1096,7 @@ void sequencer_pattern_hover(int x, int y)
 
 void sequencer_pattern_click(int button, int state, int x, int y)
 {
-  int i,j;
+  int i;
 
   if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN && hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),150,240 )) {
     dialog_close(); return; 
@@ -1183,8 +1180,6 @@ void sequencer_channel_hover(int x, int y)
 
 void sequencer_channel_click(int button, int state, int x, int y)
 {
-  int i,j;
-
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (seq_ui[B_CHAN_NEXTSYNTH]) { 
@@ -1278,8 +1273,6 @@ void sequencer_render_hover(int x, int y)
 
 void sequencer_render_click(int button, int state, int x, int y)
 {
-  int i,j;
-
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
     }
@@ -1406,8 +1399,6 @@ void sequencer_preview_hover(int x, int y)
 
 void sequencer_preview_click(int button, int state, int x, int y)
 {
-  int i,j;
-
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (seq_ui[B_PREVIEW_PLAY]&1) {
@@ -1489,7 +1480,6 @@ void sequencer_file_drag(int x, int y)
 }
 void sequencer_file_checkstate(void)
 {
-  FILE *f;
   int r, i;
   char fn[255], tmps[255];;
 

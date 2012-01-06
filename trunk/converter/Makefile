@@ -1,12 +1,12 @@
-CCOPTS=-FGLUT -m32 -std=gnu99 -I/opt/local/include -I$(FREETYPE)
+CCOPTS=-m32 -std=gnu99
 
 # OS X
 LDOPTS=-m32 -L/opt/local/lib
-CCOPTS=-FGLUT -m32 -std=gnu99 -I/opt/local/include -I$(FREETYPE)
+CCOPTS=-FGLUT -m32 -std=gnu99 
 
 # Linux
-#LDOPTS=-L/opt/local/lib -lm
-#CCOPTS=-std=gnu99 -m32 -I/opt/local/include
+#LDOPTS=-lm
+#CCOPTS=-std=gnu99 -m32
 
 DEBUGOPT=-g
 #DEBUGOPT=-mtune=core2 -O3

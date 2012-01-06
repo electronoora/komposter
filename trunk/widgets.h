@@ -44,6 +44,6 @@ int hovertest_box(float x, float y, float bx, float by, float height, float widt
 int hovertest_hslider(float x, float y, float sx, float sy, float width, float height, float pos, float onscreen, float total);
 int hovertest_vslider(float x, float y, float sx, float sy, float width, float height, float pos, float onscreen, float total);
   
-int textbox_edit(char *text, unsigned char key, int size);
+void textbox_edit(char *text, unsigned char key, int size);
 
 #endif

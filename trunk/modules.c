@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#define _MODULES_C_
 #include "audio.h"
 #include "buffermm.h"
 #include "modules.h"
@@ -54,6 +55,248 @@ int gate[MAX_SYNTH];
 int restart[MAX_SYNTH];
 
 
+////////////////////////////////////////////////
+//
+// module definitions
+//
+///////////////////////////////////////////////
+
+// names for the knob scale types
+ char *knobScaleNames[KNOBSCALES]=
+{
+  "Raw float",
+  "Frequency (Hz)",
+  "Freq from tempo",
+  "Duration (sec)",
+  "Duration from tempo",
+  "Ramp (sec)",
+  "mIDI Note",
+  "Semitones interval",
+  "Percentage"
+};
+ char *knobScaleUnits[KNOBSCALES]=
+{
+  "",
+  "Hz",
+  "x tempo (Hz)",
+  "sec",
+  "x tempo (sec)",
+  "sec",
+  "",
+  "semitones",
+  "%"
+};
+
+
+// Descriptive names for all 16 module types
+ char *modTypeNames[MODTYPES]=
+{
+	"CV",
+	"ENV",
+	"VCO",
+	"LFO",
+	"Knob",
+	"Amp mod",
+	"mixer",
+	"VCF",
+	"LPF",
+	"Delay",
+	"Scale",
+	"resample",
+	"Supersaw", //Switch",
+	"Distort",
+	"Accent",
+	"Output"
+};
+
+// Module descriptions
+ char *modTypeDescriptions[MODTYPES]=
+{
+	"Keyboard control voltage (CV) from the sequencer for setting the VCO frequency. The voltage\nis 1 unit/hz, so an A-3 generates a voltage of 440.",
+	"ADSR envelope generator with linear attack and decay/release ramps. Sustain level sets\nthe amplification, A/D/R ramps are set as a duration",
+	"Voltage controlled oscillator (VCO). Outputs the chosen waveform at a frequency set by the\ncontrol voltage. Includes a noise generator and -1 octave pulse suboscillator with levels\nselectable using control inputs.",
+	"The low frequency oscillator (LFO) can be used to, for example, make long filter- and pulse width\nsweeps, vibrato or other effects like chorus and flanging.",
+	"Knobs output a control voltage which can be used to control the other modules. There is\nno forced voltage range but 0 to 1 is normally used.",
+	"Amplitude modulation amplifies or attenuates the input signal according to the control voltage.\nSince this is done by multiplying, it also works as a ring modulator.",
+	"Mixes up to four signals together by adding. Works also an an amplifier or a frequency multiplier\nby connecting the same signal to multiple inputs",
+	"State-variable voltage controlled filter (VCF). Resonant low-, band- and highpass filter with\n12db/oct attenuation.",
+	"Voltage controlled 24db/oct 4-pole resonant lowpass filter (LPF). Self-oscillates when resonance\nis set to 100%.",
+	"Delay module which can operate either as a comb filter or an allpass filter. Has control inputs for\ngain/feedback, loop length and delay time. When feedback is not connected or zero, it functions\nas a normal one-tap variable delay. The loop length is 3 seconds when no control input is provided.",
+	"Scaler knobs can be used attenuate or amplify an incoming signal by multiplying it\nwith the modulator value.",
+        "Sample-and-hold resamples the signal down by sampling it at given intervals and\noutputting the sampled value until a new one is read. The sample rate input is a frequency in hz",
+        "Seven-oscillator supersaw generator with detune and mix controls. Emulates closely\nthe output of a Roland JP8000/JP8080 supersaw.",
+	"Amplifies and distorts the input signal by a variable amount",
+	"The accent modules outputs the user-specified voltage when a sequencer note\nbeing played has the accent mark. It can be used to change the volume, resonance or any other feature of the note.",
+	"Outputs the signal to the master mixer at the selected output level",
+
+};
+
+
+// number of dwords a module requires for buffer. ptr goes always to
+// first dword of the localdata
+ int modDataBufferLength[MODTYPES]={
+	0, //CV
+	0, //ADSR
+	0, //wave
+	0, //lfo
+	0, //knob
+	0, //amp
+	0, //mixer
+	0, //filter
+	0, //lpf24
+	5*OUTPUTFREQ, //delay
+	0, //scaler
+	0, //compressor
+	0, //switch
+	0, //distort
+	0, //accent
+	0  //output
+};
+
+
+// Number of input nodes on modules
+ int modInputCount[MODTYPES]={
+	0, //CV
+	4, //ADSR (attack, decay, sustain, release)
+	4, //wave (frequency, pwm, subosc, noise)
+	3, //lfo (frequency, ampl, bias)
+	0, //knob
+	2, //ampmod (input signal, amplification)
+	4, //mixer (four input signals)
+	3, //filter (input signal, cutoff, resonance)
+	3, //lpf24 (input signal, cutoff, resonance)
+	4, //delay (input signal, delay, loop)
+	1, //scaler (input signal)
+	2, //resample (input signal, samplerate)
+	3, //supersaw (pitch, detune, mix)      //4, //switch
+	2, //distort (input signal, distortion)
+	0, //accent
+	1  //output (input signal)
+};
+
+
+// Labels for all input nodes on modules
+ char* modInputNames[MODTYPES][4]={
+{"","","",""},
+{"A", "d", "s", "r"},
+{"frEq", "pwm", "sub", "noise"},
+{"frEq", "AmpL", "bias", ""},
+{"","","",""},
+{"in", "Amp", "", ""},
+{"in1", "in2", "in3", "in4"},
+{"in", "fc", "rEs", ""},
+{"in", "fc", "rEs", ""},
+{"in", "timE", "loop", "fb"},
+{"in", "", "", ""},
+{"in", "rate", "", ""},
+{"frEq", "detune", "mix"}, //{"in1", "in2", "in3", "in4"},
+{"in", "dist", "", ""},
+{"","","",""},
+{"in", "", "", ""}
+};
+
+// expected scale of each input on the modules
+/*
+static int modInputScale[MODTYPES][4]={
+{0, 0, 0, 0},
+{SCALE_RAMP, SCALE_RAMP, SCALE_RAMP, SCALE_RAMP},
+{SCALE_FREQUENCY, 0, 0, 0},
+{SCALE_FREQUENCY, 0, 0, 0},
+{0, 0, 0, 0},
+{"in", "Amp", "", ""},
+{"in1", "in2", "in3", "in4"},
+{"in", SCALE_FREQUENCY, "rEs", ""},
+{"in", SCALE_FREQUENCY, "rEs", ""},
+{"in", SCALE_DURATION, SCALE_DURATION, "fb"},
+{"in", "", "", ""},
+{"in", SCALE_FREQUENCY, "", ""},
+{"in1", "in2", "in3", "in4"},
+{"in", "dist", "", ""},
+{"","","",""},
+{"in", "", "", ""}
+};
+*/
+
+
+// modulator names for each module
+ char* modModulatorNames[MODTYPES]={
+"pitch",
+"",
+"waveform",
+"waveform",
+"mod",
+"",
+"",
+"mode",
+"",
+"mode",
+"LeveL",
+"",
+"input",
+"",
+"velocity",
+"level"
+};
+
+// modulator value type. 0=no modulator, 1=float, 2=integer
+ int modModulatorTypes[MODTYPES]={
+	1, //CV
+	0, //ADSR
+	3, //wave
+	4, //lfo
+	1, //knob
+	0, //amp
+	0, //mixer
+	5, //filter
+	0, //resample
+	6, //delay
+	1, //attenuator
+	0, //resample
+	0, //supersaw    //2, //switch
+	0, //distort
+	1, //accent
+	1  //output
+};
+
+
+ char* modVcoWaveforms[VCO_WAVEFORMS]={"Pulse", "Saw", "Triangle", "Sine"}; //, "Noise"};
+ char* modLfoWaveforms[LFO_WAVEFORMS]={"Square", "Saw", "Triangle", "Sine"};
+ char* modVcfModes[VCF_MODES]={"Off", "Lowpass", "Highpass", "Bandpass"};
+ char* modDelayModes[DELAY_MODES]={"Comb filter", "Allpass filter"};
+
+
+// input node positions [maxnodes][node]
+ float node_xoffset[5][4]={
+  {0, 0, 0, 0},
+  {-(MODULE_HALF+0.5), 0, 0, 0},
+  {0, 0, 0, 0},
+  {-(MODULE_HALF+0.5), 0, 0, 0},
+  {-MODULE_QUARTER, MODULE_QUARTER, -MODULE_QUARTER, MODULE_QUARTER}
+};
+ float node_yoffset[5][4]={
+  {0, 0, 0, 0},
+  {0+OUTPUT_OFFSET, 0, 0, 0},
+  {-(MODULE_HALF+0.5), (MODULE_HALF+0.5), 0, 0},
+  {0+OUTPUT_OFFSET, -(MODULE_HALF+0.5), (MODULE_HALF+0.5), 0},
+  {-(MODULE_HALF+0.5), -(MODULE_HALF+0.5), (MODULE_HALF+0.5), (MODULE_HALF+0.5)}
+};
+
+// input node label positions
+ float node_labelpos[5][4]={
+  {0,0,0,0}, {3,0,0,0}, {0,2,0,0}, {3,0,2,0}, {0,0,2,2}
+};
+                
+// output node positions depending on how many input nodes there are
+ int node_outputCount[5]={4, 3, 2, 1, 2};
+ int node_outputList[5][4]={
+  {0, 1, 2, 3}, {0, 2, 3, -1}, {0, 1, -1, -1}, {0, -1, -1, -1}, {0, 1, -1, -1} };
+ int node_outputxoffset[4]={ //left, right, top, bottom
+  (MODULE_HALF)+0.5, -(MODULE_HALF)+0.5, MODULE_HALF, MODULE_HALF};
+ int node_outputyoffset[4]={
+  MODULE_HALF-OUTPUT_OFFSET, MODULE_HALF+OUTPUT_OFFSET, -MODULE_HALF, MODULE_HALF};
+
+
+
 
 
 ////////////////////////////////////////////////
@@ -76,7 +319,7 @@ MODULE_FUNC(accent) {
 
 MODULE_FUNC(vco) // phase-accumulating oscillator w/ suboscillator
 {
-  float out;
+  float out=0.0;
   
   mod_fdata[0]+=ms[0];
   mod_fdata[0]-=floor(mod_fdata[0]);
@@ -110,7 +353,7 @@ MODULE_FUNC(vco) // phase-accumulating oscillator w/ suboscillator
 
 
 MODULE_FUNC(lfo) { // low-frequency oscillator, input is freq in hz, cv output (0 to 1.0)
-  float out;
+  float out=0.0;
 
   // hard restart
   if (restart[v]&SEQ_RESTART_LFO) { mod_fdata[0]=0; mod_fdata[1]=0; }
@@ -131,8 +374,6 @@ MODULE_FUNC(lfo) { // low-frequency oscillator, input is freq in hz, cv output (
 
 MODULE_FUNC(env) // linear adsr envelope generator
 {
-  int i;
-
   // hard restart
   if (restart[v]&SEQ_RESTART_ENV) { mod_fdata[0]=0; mod_ldata[1]=0; }
   

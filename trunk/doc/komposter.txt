@@ -530,25 +530,3 @@ Other effects, such as a reverb, can be also accomplished by using delay
 modules. See the included example synth for an implementation of a Schroeder
 reverberator using six delays.
 
-
-
-COPYRIGHTS
-^^^^^^^^^^
-
-Komposter copyright (c) 2010-2011 Firehawk/TDA and licensed under the
-GNU General Public License version 2. See file 'doc/LICENSE'.
-
-Player and converter code copyright (c) 2010-2011 Firehawk/TDA and
-licensed on ter the MIT license, see http://www.opensource.org/licenses/mit-license.php  
-
-Portions of this software are copyright (c) 2010 The FreeType
-Project (www.freetype.org).  All rights reserved.
-
-OpenAL copyright (c) 2004 OpenAL Development Team
-
-GLUT copyright (c) 2000 Mark J. Kilgard
-
-078MKSD font by Masayuki Sato
-M42 Flight 721 font by Miffies (http://mfs.jp.org/)
-Acknowledge font by Aenigma (http://www.aenigmafonts.com/)
-

@@ -336,7 +336,7 @@ void synth_mouse_drag(int x, int y)
 
 void synth_mouse_click(int button, int state, int x, int y)
 {
-  int m,i;
+  int m;
   char tmps[256], *syndir;
 
   if (button==GLUT_LEFT_BUTTON) {
@@ -622,7 +622,7 @@ void synth_draw(void)
 void synth_addmodule(int type)
 {
   int m,n;
-  int i, j, k, mi, mj, bmi, bmj;
+  int i, j, k, mi=0, mj=0, bmi, bmj;
   float d, da, mda;
   float xd, yd;
   char tmps[256];
@@ -856,8 +856,6 @@ void synthlabel_hover(int x, int y)
 
 void synthlabel_click(int button, int state, int x, int y)
 {
-  int i,j;
-
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (synth_label_kbfocus) {

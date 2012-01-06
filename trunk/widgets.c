@@ -12,9 +12,6 @@
 
 #include "widgets.h"
 
-// note names
-static char notenames[]="C-C#D-D#E-F-F#G-G#A-A#H-";
-
 
 //void draw_module(float x, float y, int type)
 void draw_module(synthmodule *s)
@@ -97,7 +94,7 @@ void draw_module(synthmodule *s)
 // label align 0=below, 1=to left, 2=above, 3=to right
 void draw_signal_node(float x, float y, int type, char* label, int align)
 {
-  float f,lx,ly,r;
+  float f,r;
 
   // output nodes are red and offset 
   if (type&1) {
@@ -631,7 +628,7 @@ int hovertest_vslider(float x, float y,
 }
 
 
-int textbox_edit(char *text, unsigned char key, int size)
+void textbox_edit(char *text, unsigned char key, int size)
 {
   //printf("key is %d\n", key);
   if (key==127 || key==8) // del or backspace

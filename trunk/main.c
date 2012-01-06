@@ -214,12 +214,12 @@ void *audio_playback(void *param)
     audio_update(0);
     rc=usleep(1000); // 1ms sleep
   }
+  return NULL;
 }
 
 void *audio_renderer(void *param)
 {
   int rc;
-  long copylen;
 
   while(1) {
     if (render_state==RENDER_IN_PROGRESS || render_state==RENDER_LIVE) {
@@ -228,14 +228,12 @@ void *audio_renderer(void *param)
       rc=usleep(10000);
     }
   }
+  return NULL;
 }
 
 
 void display(void)
 {
-  int m,n;
-  float a;
-
   // setup projection and modelview matrices
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -314,7 +312,7 @@ int is_dir(const char *path)
 
 	if(stat(path, &st) == 0)
 	{
-		if(st.st_mode & S_IFDIR != 0)
+		if((st.st_mode & S_IFDIR) != 0)
 		{
 			return 1;
 		}
@@ -326,7 +324,6 @@ int is_dir(const char *path)
 int main(int argc, char **argv)
 {
   int err;
-  GLubyte *gls;
 #ifdef __APPLE__
   CFBundleRef mainBundle;
   CFURLRef res;
@@ -384,7 +381,7 @@ int main(int argc, char **argv)
   err=font_init();
   if (!err) {
     printf("Error initializing Freetype!\n");
-    exit;
+    return 0;
   }
 
   // set glut callbacks

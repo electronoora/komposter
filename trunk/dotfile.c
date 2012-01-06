@@ -26,7 +26,7 @@ confkey configdata[256];
 int dotfile_load() {
   FILE *f;
   char *home, dotfile[256], line[256];
-  char key[256], value[256], *t, *s;
+  char *t, *s;
   int i;
   
   home=getenv("HOME");
@@ -65,6 +65,7 @@ int dotfile_load() {
     dotfile_setvalue("songFileDir", home);
     dotfile_save();
   }
+  return 0;
 }
 
 
@@ -92,6 +93,7 @@ int dotfile_save() {
     }
     fclose(f);
   }
+  return 0;
 }
 
 

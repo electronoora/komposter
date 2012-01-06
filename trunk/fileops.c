@@ -255,7 +255,7 @@ int load_chunk_kbnk(int syn, FILE *f)
   // loop through patches
   for(p=0;p<np;p++) {
     fpos=8 + p * (128 + 3*sl*4);
-    strncpy((char*)&patchname[syn][p], &chunkdata[fpos], 128); // patch name
+    strncpy((char*)&patchname[syn][p], (char*)&chunkdata[fpos], 128); // patch name
     memcpy(&sstk, &chunkdata[fpos + 128], sl*4); // module indexes
     memcpy(&modvalue[syn][p],      &chunkdata[fpos+128+sl*4], sl*4);
     memcpy(&modquantifier[syn][p], &chunkdata[fpos+128+sl*8], sl*4);    
@@ -333,7 +333,6 @@ int load_chunk_kseq(FILE *f)
 int save_chunk_ksyn(int syn, FILE *f)
 {
   unsigned char *filedata;
-  char tmps[255];
   unsigned int m, nm, dsize, pad;
 
   // what's the largest module number in use?

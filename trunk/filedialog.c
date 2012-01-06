@@ -55,7 +55,6 @@ void filedialog_open(filedialog *fd, char *ext, char *path)
 // use them..
 void filedialog_scanpath(filedialog *fd)
 {
-  int i;
   char globp[512];
 
   // release memory from previous glob
