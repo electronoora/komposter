@@ -378,7 +378,7 @@ void patch_draw(void)
     sprintf(tmps, "%02d", mi); render_text(tmps, x+20, 20+mm*16-yd, 2, 0xff505050, 0);
     sprintf(tmps, "%s", modTypeNames[mod[csynth][mi].type]); render_text(tmps, x+44, 20+mm*16-yd, 2, 0xffc0c0c0, 0);
 
-    sprintf(quant, "");
+    quant[0]='\0';
     if (modModulatorTypes[mod[csynth][mi].type]==1)
       sprintf(quant, "(%d bit)",  modquantifier[csynth][ cpatch[csynth] ][ mi ]);
     sprintf(tmps, "%s %s", modModulatorNames[mod[csynth][mi].type], quant);
@@ -388,7 +388,7 @@ void patch_draw(void)
 
     switch(modModulatorTypes[mod[csynth][mi].type])
     {
-      case 0: sprintf(tmps, ""); break; // no modulator value
+      case 0: tmps[0]='\0'; break; // no modulator value
       case 1: // float
         if (mt==MOD_KNOB || mt==MOD_ATTENUATOR || mt==MOD_ACCENT) {
           f=knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][ cpatch[csynth] ][ mi ]);
@@ -456,7 +456,7 @@ void patch_draw_modulator(void)
   render_text("esc/right click to close", (DS_WIDTH/2)+111, (DS_HEIGHT/2)+72, 2, 0xffc0c0c0, 2);
 
 
-  render_text(knobScaleNames[mod[csynth][mi].scale], (DS_WIDTH/2)-104, (DS_HEIGHT/2)-18, 2, 0xffc0c0c0, 0);
+  render_text((char*)knobScaleNames[mod[csynth][mi].scale], (DS_WIDTH/2)-104, (DS_HEIGHT/2)-18, 2, 0xffc0c0c0, 0);
   draw_textbox((DS_WIDTH/2)+54, (DS_HEIGHT/2)-20, 16, 100, modeditbox, modulator_ui[B_MOD_VALUE]);  
   
   render_text("precision:", (DS_WIDTH/2)-104, (DS_HEIGHT/2)+4, 2, 0xffc0c0c0, 0);
@@ -478,7 +478,7 @@ void patch_draw_modulator(void)
       sprintf(raws, "%g", rf);
     } else {
       sprintf(tmps, "Not a float value");
-      sprintf(raws, "");
+      raws[0]='\0';
     }
     render_text("output:", (DS_WIDTH/2)-104, (DS_HEIGHT/2)+36, 2, 0xffc0c0c0, 0);
     render_text(tmps, (DS_WIDTH/2)+34, (DS_HEIGHT/2)+36, 2, 0xfff0f0f0, 1);

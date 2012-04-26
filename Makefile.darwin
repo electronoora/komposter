@@ -6,12 +6,15 @@
 
 VERSION=2.0b1
 
-# use 'gcc' on Snow Leopard, this works only on Lion
+# Set the location of your OS X 10.6 SDK
+#SDK=/Developer/SDKs/MacOSX10.6.sdk
+SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+
 CC=gcc-4.2
 INSTALL_PATH_BIN=/Applications
 INSTALL_PATH_LIB=/Applications
 FREETYPE=ftinclude
-MCCOPTS=-Wall -I /Developer/SDKs/MacOSX10.6.sdk/usr/include/ -I /Developer/SDKs/MacOSX10.6.sdk/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/ -I /Developer/SDKs/MacOSX10.6.sdk/Developer/Headers/ -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6
+MCCOPTS=-Wall -I $(SDK)/usr/include/ -I $(SDK)/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/ -I $(SDK)/Developer/Headers/ -isysroot $(SDK) -mmacosx-version-min=10.6
 LDOPTS=-m32 -Lresources -framework OpenGL -framework GLUT -lfreetype -framework OpenAL -framework CoreFoundation -lz -mmacosx-version-min=10.6
 LDPOST=
 DIST=dmg
