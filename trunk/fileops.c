@@ -368,7 +368,7 @@ int save_chunk_ksyn(int syn, FILE *f)
 int save_chunk_kbnk(int syn, FILE *f)
 {
   unsigned char *filedata;
-  char tmps[255];
+  //char tmps[255];
   unsigned int p, m, mm, dsize, tmp;
   unsigned long fpos, stacklen;
 

@@ -28,6 +28,6 @@ typedef struct {
   float a;
 } bzr;
 
-pt bezier(pt *p, bzr *bz, float t);
+pt *bezier(pt *p, bzr *bz, float t);
 
 #endif

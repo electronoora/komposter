@@ -690,7 +690,7 @@ void synth_draw_addmodule(void)
   for(i=0;i<MODULE_PALETTE;i++) draw_module(&tmpmod[i]);
   m=getactive(&tmpmod[0], MODULE_PALETTE);
   if (m>=0) {
-    render_text(modTypeDescriptions[tmpmod[m].type], (DS_WIDTH/2)-254, (DS_HEIGHT/2)+75, 3, 0xffe0e0e0, 0);
+    render_text((char*)modTypeDescriptions[tmpmod[m].type], (DS_WIDTH/2)-254, (DS_HEIGHT/2)+75, 3, 0xffe0e0e0, 0);
   }
 
   render_text("esc/right click to close", (DS_WIDTH/2)+261, (DS_HEIGHT/2)+127, 2, 0xffc0c0c0, 2);
@@ -840,7 +840,7 @@ void synthlabel_draw(void)
   render_text("scale:", (DS_WIDTH/2)-120, (DS_HEIGHT/2)+21, 2, 0xffc0c0c0, 0);
   draw_button((DS_WIDTH/2)+112, (DS_HEIGHT/2)+18, 16, ">>", synth_ui[B_LABEL_INCSCALE]);
   draw_button((DS_WIDTH/2)-52,  (DS_HEIGHT/2)+18, 16, "<<", synth_ui[B_LABEL_DECSCALE]);
-  draw_textbox((DS_WIDTH/2)+30, (DS_HEIGHT/2)+18, 16, 140, knobScaleNames[mod[csynth][synth_label_edit].scale], 0);
+  draw_textbox((DS_WIDTH/2)+30, (DS_HEIGHT/2)+18, 16, 140, (char*)knobScaleNames[mod[csynth][synth_label_edit].scale], 0);
 }
 
 

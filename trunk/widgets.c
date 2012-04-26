@@ -44,8 +44,8 @@ void draw_module(synthmodule *s)
 
   // label
   if (s->type!=MOD_KNOB && s->type!=MOD_ATTENUATOR && s->type!=MOD_OUTPUT && s->type!=MOD_ACCENT) {
-    render_text(modTypeNames[s->type], x+1, round(y+(MODULE_SIZE/5))+1, 2, 0xff000000, 1);
-    render_text(modTypeNames[s->type], x, round(y+(MODULE_SIZE/5)), 2, 0xffffffff, 1);
+    render_text((char*)modTypeNames[s->type], x+1, round(y+(MODULE_SIZE/5))+1, 2, 0xff000000, 1);
+    render_text((char*)modTypeNames[s->type], x, round(y+(MODULE_SIZE/5)), 2, 0xffffffff, 1);
   } else {
     // label
     switch (s->type) {
@@ -64,8 +64,8 @@ void draw_module(synthmodule *s)
       render_text(s->label, x+1, round(y+(MODULE_SIZE/3)+5), 2, 0xff000000, 1);
       render_text(s->label, x, round(y+(MODULE_SIZE/3)+4), 2, 0xffffffff, 1);
     } else {
-      render_text(modTypeNames[s->type], x+1, round(y+(MODULE_SIZE/3)+5), 2, 0xff000000, 1);
-      render_text(modTypeNames[s->type], x, round(y+(MODULE_SIZE/3)+4), 2, 0xffffffff, 1);
+      render_text((char*)modTypeNames[s->type], x+1, round(y+(MODULE_SIZE/3)+5), 2, 0xff000000, 1);
+      render_text((char*)modTypeNames[s->type], x, round(y+(MODULE_SIZE/3)+4), 2, 0xffffffff, 1);
     }
   }
 
@@ -75,7 +75,7 @@ void draw_module(synthmodule *s)
       x + node_xoffset[modInputCount[type]][i],
       y + node_yoffset[modInputCount[type]][i],
       (s->inpactive==i) ? 2 : 0,
-      modInputNames[type][i], node_labelpos[modInputCount[type]][i]);
+      (char*)modInputNames[type][i], node_labelpos[modInputCount[type]][i]);
   }
 
   // draw output node
