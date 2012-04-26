@@ -297,6 +297,26 @@ static int modInputScale[MODTYPES][4]={
 
 
 
+//
+// init for supersaw tables
+//
+
+void calc_supersaw_tables() {
+  double x, y;
+  int mod, osc, e;
+
+  for (mod=0; mod<128; mod++) {
+    x=(float)(mod) / 127.0;
+    supersaw_mix[mod][0]=-0.55366*x + 0.99785;
+    for(y=0,e=0;e<12;e++) y+=coeftable[e]*pow(x, e);
+    for(osc=0; osc<7; osc++) {
+      supersaw_detune[mod][osc]=1.0+osc_offset[osc]*y;
+      supersaw_mix[mod][osc]=-0.73764*x*x + 1.2841*x + 0.044372;
+    }
+  }
+}
+
+
 
 
 ////////////////////////////////////////////////

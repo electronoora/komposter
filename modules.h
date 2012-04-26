@@ -137,5 +137,7 @@ typedef struct {
 // module function call table
 extern float (*mod_functable[MODTYPES])(unsigned char, float*, void*, float*);
 
+// supersaw init function - called from main
+void calc_supersaw_tables();
 
 #endif
