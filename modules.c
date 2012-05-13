@@ -311,7 +311,7 @@ void calc_supersaw_tables() {
     for(y=0,e=0;e<12;e++) y+=coeftable[e]*pow(x, e);
     for(osc=0; osc<7; osc++) {
       supersaw_detune[mod][osc]=1.0+osc_offset[osc]*y;
-      supersaw_mix[mod][osc]=-0.73764*x*x + 1.2841*x + 0.044372;
+      if (osc) supersaw_mix[mod][osc]=-0.73764*x*x + 1.2841*x + 0.044372;
     }
   }
 }
