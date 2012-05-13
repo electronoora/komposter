@@ -22,6 +22,12 @@ typedef struct {
 
 confkey configdata[256];
 
+/*
+
+note to self: this code is a mess and needs a rewrite
+
+*/
+
 
 int dotfile_load() {
   FILE *f;
