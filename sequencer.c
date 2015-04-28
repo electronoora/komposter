@@ -686,8 +686,8 @@ void sequencer_keyboard(unsigned char key, int x, int y)
 
 void sequencer_draw(void)
 {
-  int i, j, k, sk, sx, sl, osl, pl;
-  float f, fs, fe;
+  int i, j, k, sk, sl, osl, pl;
+  float f, fs, fe, sx;
   char tmps[128];
 
  // divider lines

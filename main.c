@@ -20,8 +20,8 @@
 #include <unistd.h>
 
 #ifdef __APPLE__
-#include <FlatCarbon/CFURL.h>
-#include <FlatCarbon/CFBundle.h>
+#include <CoreFoundation/CFURL.h>
+#include <CoreFoundation/CFBundle.h>
 #endif
 
 #include "arch.h"

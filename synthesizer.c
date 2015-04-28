@@ -580,7 +580,7 @@ void synth_draw(void)
           x2=mod[csynth][m].x + node_xoffset[modInputCount[mod[csynth][m].type]][n];
           y2=mod[csynth][m].y + node_yoffset[modInputCount[mod[csynth][m].type]][n];
           cx2=x2; cy2=y2;
-          if (abs(node_xoffset[modInputCount[mod[csynth][m].type]][n]) > abs(node_yoffset[modInputCount[mod[csynth][m].type]][n])) {
+          if (fabsf(node_xoffset[modInputCount[mod[csynth][m].type]][n]) > fabsf(node_yoffset[modInputCount[mod[csynth][m].type]][n])) {
             cx2+=node_xoffset[modInputCount[mod[csynth][m].type]][n];
           } else {
             cy2+=node_yoffset[modInputCount[mod[csynth][m].type]][n];

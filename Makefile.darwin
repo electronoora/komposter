@@ -8,14 +8,14 @@ VERSION=2.0b1
 
 # Set the location of your OS X 10.6 SDK
 #SDK=/Developer/SDKs/MacOSX10.6.sdk
-SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
 
 CC=gcc
 INSTALL_PATH_BIN=/Applications
 INSTALL_PATH_LIB=/Applications
 FREETYPE=ftinclude
-MCCOPTS=-Wall -I $(SDK)/usr/include/ -I $(SDK)/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/ -I $(SDK)/Developer/Headers/ -isysroot $(SDK) -mmacosx-version-min=10.6
-LDOPTS=-m32 -Lresources -framework OpenGL -framework GLUT -lfreetype -framework OpenAL -framework CoreFoundation -lz -mmacosx-version-min=10.6
+MCCOPTS=-Wall -I $(SDK)/usr/include/ -I $(SDK)/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/ -I $(SDK)/Developer/Headers/ -isysroot $(SDK) -mmacosx-version-min=10.9 -Wno-deprecated-declarations
+LDOPTS=-m32 -Lresources -framework OpenGL -framework GLUT -lfreetype -framework OpenAL -framework CoreFoundation -lz -mmacosx-version-min=10.9
 LDPOST=
 DIST=dmg
 CCOPTS=-FGLUT -m32 -std=gnu99 -I/opt/local/include -I$(FREETYPE)  

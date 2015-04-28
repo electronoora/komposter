@@ -11,7 +11,7 @@
  */
 
 #ifndef __BUFFERMM_H__
-#define __BUFFERMM_H_
+#define __BUFFERMM_H__
 
 #include "modules.h"
 #include "pattern.h"

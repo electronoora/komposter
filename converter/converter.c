@@ -277,9 +277,9 @@ int main(int argc, char **argv) {
           break;
         case 4: // lfo, 0=triangle, 1=sine
           if ( (int)(modvalue[s][p][signalfifo[s][m]]) == 3) {
-            printf( "01h", (int)(modvalue[s][p][signalfifo[s][ m]]) ); // triangle
+            printf( "01h" );
           } else {
-            printf( "00h", (int)(modvalue[s][p][signalfifo[s][ m]]) ); // sine
+            printf( "00h" );
           }
           break;
         case 5: // filter
