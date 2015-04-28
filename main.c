@@ -56,7 +56,7 @@ pthread_t audiothread;
 pthread_t renderthread;
 
 // path to resources
-char *respath;
+char respath[512];
 
 // from audio.c
 extern short *render_buffer;
@@ -309,37 +309,10 @@ int main(int argc, char **argv)
 {
   int err;
 #ifdef __APPLE__
+  char *cfrespath;
   CFBundleRef mainBundle;
   CFURLRef res;
   CFStringRef respathref;
-#endif
-
-#ifdef __APPLE__
-  // get application bundle base path
-  mainBundle=CFBundleGetMainBundle();
-  res=CFBundleCopyBundleURL(mainBundle);
-  respathref=CFURLCopyFileSystemPath(res, 0);
-  respath=(char*)CFStringGetCStringPtr(respathref, kCFStringEncodingISOLatin1);
-  if (!respath) {
-    respath=malloc(512);
-    CFStringGetCString(respathref, respath, 512, kCFStringEncodingISOLatin1);
-  }
-  strncat(respath, "/Contents/Resources/", 512); // append the resource dir
-#else
-  respath=malloc(512);
-#ifdef RESOURCEPATH
-	if(is_dir(RESOURCEPATH))
-	{
-		strncpy(respath, RESOURCEPATH, 512);
-	}
-	else
-	{
-		fprintf(stderr, "'%s' not found, trying relative path\n", RESOURCEPATH);
-		strncpy(respath, "resources/", 512);
-	}
-#else
-  strncpy(respath, "resources/", 512);
-#endif
 #endif
 
   // load config file from user's homedir
@@ -360,6 +333,40 @@ int main(int argc, char **argv)
   glutInitWindowSize(DS_WIDTH,DS_HEIGHT);
   glutCreateWindow("komposter");
   glutIgnoreKeyRepeat(1);
+  
+  
+
+#ifdef __APPLE__
+  // get application bundle base path
+  mainBundle=CFBundleGetMainBundle();
+  res=CFBundleCopyBundleURL(mainBundle);
+  respathref=CFURLCopyFileSystemPath(res, 0);
+  cfrespath=(char*)CFStringGetCStringPtr(respathref, kCFStringEncodingISOLatin1);
+  if (!cfrespath) {
+    cfrespath=malloc(512);
+    CFStringGetCString(respathref, cfrespath, 511, kCFStringEncodingISOLatin1);
+    strncpy(respath, cfrespath, 511);
+    free(cfrespath);
+  } else {
+    strncpy(respath, cfrespath, 511);  
+  }
+  strncat(respath, "/Contents/Resources/", 511); // append the resource dir
+#else
+#ifdef RESOURCEPATH
+	if(is_dir(RESOURCEPATH))
+	{
+		strncpy(respath, RESOURCEPATH, 511);
+	}
+	else
+	{
+		fprintf(stderr, "'%s' not found, trying relative path\n", RESOURCEPATH);
+		strncpy(respath, "resources/", 511);
+	}
+#else
+  strncpy(respath, "resources/", 512);
+#endif
+#endif
+  printf("Resource path is %s\n", respath);
 
   // init freetype
   err=font_init();

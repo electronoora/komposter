@@ -16,7 +16,7 @@
 #define FONT_STYLES 8
 
 // from main.c
-extern char *respath;
+extern char respath[512];
 
 // eight font styles
 char fontfile[FONT_STYLES][255]={
@@ -73,7 +73,10 @@ int font_init(void)
 
   // init freetype
   err=FT_Init_FreeType(&ft);
-  if (err) return 0;
+  if (err) {
+    printf("Freetype error on FT_Init_FreeType()\n");
+    return 0;
+  }
 
   // load font faces and set sizes
   for(i=0;i<FONT_STYLES;i++) {
@@ -82,7 +85,10 @@ int font_init(void)
     if (fontsize[i] > 0) {
 //      err=FT_New_Face(ft, fontfile[i], 0, &font[i]); 
       err=FT_New_Face(ft, fullpath, 0, &font[i]); 
-      if (err) return 0;
+      if (err) {
+        printf("Freetype error on FT_New_Face(), path %s\n", fullpath);
+        return 0;
+      }
       err=FT_Set_Pixel_Sizes(font[i], 0, fontsize[i]);
     }
   }
@@ -99,7 +105,10 @@ int font_init(void)
         
         // render character
         err=FT_Load_Char(font[f], rc, FT_LOAD_RENDER);
-        if (err) continue;
+        if (err) {
+          printf("Freetype error on FT_Load_Char()\n");
+          continue;
+        }
 
         // save metrics
         font_advance[f][c]=slot->advance.x >> 6;
