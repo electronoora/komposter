@@ -47,9 +47,12 @@
 #define MAIN_PAGE3 3
 #define MAIN_PAGE4 4
 
+#define MAIN_VU	5
 
 int cpage=1;
-int main_ui[5];
+int main_ui[6];
+
+float lastrf=0.0f;
 
 // posix threads for audio playback and rendering
 pthread_t audiothread;
@@ -64,6 +67,8 @@ extern int render_state;
 extern long render_pos;
 extern long render_bufferlen;
 long audio_render(void);
+extern float audio_peak;
+extern float audio_latest_peak;
 
 // from modules.c
 //extern double osc_offset[7];
@@ -87,6 +92,8 @@ void mouse_hoverfunc(int x, int y)
   main_ui[MAIN_PAGE4]=hovertest_box(x,y,DS_WIDTH-93, DS_HEIGHT-14, 16, 16);
   main_ui[MAIN_ABOUT]=hovertest_box(x,y,DS_WIDTH-42,DS_HEIGHT-14, 16, 73);
 
+  main_ui[MAIN_VU]=hovertest_box(x,y,728, DS_HEIGHT-14, 16, 100);
+  
   // call the hover function of the currently active page
   switch(cpage) {
     case MAIN_PAGE1: synth_mouse_hover(x,y); break;
@@ -127,6 +134,7 @@ void mouse_clickfunc(int button, int state, int x, int y)
       if (main_ui[MAIN_PAGE3]) { console_post("Patterns");     cpage=3; return; }
       if (main_ui[MAIN_PAGE4]) { console_post("Sequencer");    cpage=4; return; }
       if (main_ui[MAIN_ABOUT]) { dialog_open(&about_draw, &about_hover, &about_click); return; }
+      if (main_ui[MAIN_VU]) { audio_peak=0.0f; console_post("VU meter peak reset"); return; }
     }
   }
 
@@ -234,6 +242,9 @@ void *audio_renderer(void *param)
 
 void display(void)
 {
+  char tmps[128];
+  float rf;
+
   // setup projection and modelview matrices
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -271,6 +282,21 @@ void display(void)
   draw_button(DS_WIDTH-93, DS_HEIGHT-14, 16, "4", main_ui[MAIN_PAGE4]);
   draw_textbox(DS_WIDTH-42, DS_HEIGHT-14, 16, 74, "komposter", main_ui[MAIN_ABOUT]);
   main_ui[cpage]&=1;
+
+  // draw vu peak meter
+  rf=fmin(1.0f, audio_latest_peak);
+  rf=(0.2*lastrf) + (0.8*rf); // damping
+  lastrf=rf;
+  draw_textbox(728, DS_HEIGHT-14, 16, 100, "", main_ui[MAIN_VU]);
+  glColor4f(0.68f, 0.33f, 0.0f, 0.94f);
+  glBegin(GL_QUADS);
+  glVertex2f(678, DS_HEIGHT-22);
+  glVertex2f(678 + rf*100, DS_HEIGHT-22);
+  glVertex2f(678 + rf*100, DS_HEIGHT-6);
+  glVertex2f(678, DS_HEIGHT-6);
+  glEnd();
+  sprintf(tmps, "%1.2f", audio_peak);
+  render_text(tmps, 728, DS_HEIGHT-11, 2, (audio_peak > 1.0f) ? 0xffff8080 : 0xffffffff, 1);
 
   // if a dialog is active, dim the screen and draw it
   if (is_dialog()) dialog_draw();

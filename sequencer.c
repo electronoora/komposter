@@ -135,6 +135,8 @@ extern long render_pos;
 extern short *render_buffer;
 extern long render_playpos;
 extern int render_type;
+extern float audio_peak;
+extern float audio_latest_peak;
 
 
 // initialize seq data to defaults
@@ -679,7 +681,6 @@ void sequencer_keyboard(unsigned char key, int x, int y)
       seq_render_end=m;  
     }
     break;
-
   }
 }
 
@@ -1030,6 +1031,23 @@ void sequencer_draw(void)
   draw_button(372, DS_HEIGHT-14, 16, "L", seq_ui[B_LOAD_SONG]);
 
   draw_button(394, DS_HEIGHT-14, 16, "N", seq_ui[B_NEWSONG]);
+
+
+  // draw peak meter and reset button
+/*
+  float rf=fmin(1.0f, audio_latest_peak);
+  draw_textbox(728, DS_HEIGHT-14, 16, 100, "", 0); 
+  glColor4f(0.68f, 0.33f, 0.0f, 0.94f);
+  glBegin(GL_QUADS);
+  glVertex2f(678, DS_HEIGHT-22);
+  glVertex2f(678 + rf*100, DS_HEIGHT-22);
+  glVertex2f(678 + rf*100, DS_HEIGHT-6);
+  glVertex2f(678, DS_HEIGHT-6);
+  glEnd();
+
+  sprintf(tmps, "%1.2f", audio_peak);
+  render_text(tmps, 782, DS_HEIGHT-11, 2, (audio_peak > 1.0f) ? 0xffff8080 : 0xffffffff, 0);
+*/
   
 }
 
@@ -1416,8 +1434,8 @@ void sequencer_preview_click(int button, int state, int x, int y)
       // wav dump button
 ///
       if (seq_ui[B_PREVIEW_EXPORT]) { 
-        audio_exportwav("render_dump.wav");
-        console_post("Rendered audio written to disk as render_dump.wav");
+        audio_exportwav(); //"render_dump.wav");
+//        console_post("Rendered audio written to disk as render_dump.wav");
         return;
       }
 ///

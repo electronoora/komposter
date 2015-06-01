@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "audio.h"
 #include "buffermm.h"
 #include "constants.h"
@@ -88,11 +89,28 @@ float modulator[MAX_CHANNELS][MAX_MODULES];  // currently modulator value
 float output[MAX_CHANNELS][MAX_MODULES];     // output "voltage" from each module
 float localdata[MAX_CHANNELS][MAX_MODULES][16];  // 16 dwords of local data for each module
 
+// audio peak values
+float audio_peak, audio_latest_peak;
+
+
+// above which point to round audio peaks
+#define AUDIO_SHAPER_THRESHOLD	0.9
+
+
+// waveshaper to limit audio range
+float audio_shape(float input)
+{
+  return 0.5 * (fabs(input + AUDIO_SHAPER_THRESHOLD) - fabs(input - AUDIO_SHAPER_THRESHOLD));  
+}
+
 
 int audio_initialize(void)
 {
   int error, i;
   short data[AUDIOBUFFER_LEN*2]; //16bit stereo
+
+  audio_peak=0.0f;
+  audio_latest_peak=0.0f;
 
   playpos=0;
 
@@ -181,6 +199,7 @@ int audio_update(int cs)
     if (alGetError()!=AL_NO_ERROR) return 0;
 
     // fill data and queue the buffer
+    audio_latest_peak=0.0f;
     audio_process((short*)(&data), AUDIOBUFFER_LEN);
     alBufferData(buffer, format, data, AUDIOBUFFER_LEN*4, OUTPUTFREQ);
     active++;
@@ -335,6 +354,12 @@ int audio_process(short *buffer, long bufferlen)
       }
       restart[voice]=0; // did restart on this sample
       p=output[voice][mi];
+       
+      // update audio peaks
+      if (fabs(p) > audio_peak) audio_peak=fabs(p);
+      if (fabs(p) > audio_latest_peak) audio_latest_peak=fabs(p);
+ 
+      p=audio_shape(p);
       s=(short)(32766*p);
       buffer[i*2]=s; buffer[i*2+1]=s; // output stream is in stereo
 
@@ -376,7 +401,9 @@ long audio_render(void)
   bufferlen = (render_bufferlen) - render_pos;  
   buffer=&render_buffer[render_pos*2];
 
-
+  // when playing live,. we want to keep render_pos no more than than 2*bufferlen
+  // ahead of render_playpos to allow changes to patches during playback.
+  if (render_state==RENDER_LIVE && render_pos >= (render_playpos+2*bufferlen)) return 0;
 
   // loop for each sample in buffer
   for(i=0;i<bufferlen;i++) {
@@ -457,7 +484,11 @@ long audio_render(void)
       p+=output[voice][mi];
     }
 
-    // TODO: attenuate here for master out volume
+    // update audio peaks
+    if (fabs(p) > audio_peak) audio_peak=fabs(p);
+    if (fabs(p) > audio_latest_peak) audio_latest_peak=fabs(p);
+
+    p=audio_shape(p);
     s=(short)(32766*p);
     buffer[i*2]=s; buffer[i*2+1]=s; // output stream is in stereo
 
@@ -557,10 +588,15 @@ typedef struct {
   char wav_sub2chunkid[4];
   unsigned long wav_sub2chunksize;
 } wavheader;
-int audio_exportwav(char *filename)
+int audio_exportwav() //char *filename)
 {
   FILE *f;
   wavheader w;
+
+  char *home, audiofile[512], logentry[1024];
+
+  home=getenv("HOME");
+  snprintf(audiofile, 511, "%s/Desktop/komposter_render_%u.wav", home, (int)time(NULL));
   
   strncpy((char*)&w.wav_chunkid, "RIFF", 4);
   w.wav_chunksize=0;
@@ -578,10 +614,15 @@ int audio_exportwav(char *filename)
 
   w.wav_chunksize=36+render_bufferlen*2*2;
   w.wav_sub2chunksize=render_bufferlen*2*2;
-  f=fopen(filename, "wb");
+
+  f=fopen(audiofile, "wb");
   fwrite(&w, sizeof(wavheader), 1, f);
   fwrite(render_buffer, sizeof(short), render_bufferlen*2, f);
   fclose(f);
+
+  snprintf(logentry, 1023, "Wrote rendered audio to %s", audiofile);
+  console_post(logentry);
+
   return 0;
 }
 
