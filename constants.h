@@ -11,8 +11,8 @@
  */
 
 // version number
-#define K_VERSION "v2.0b1 r384"
-#define K_COPYRIGHT "copyright (c) 2011 firEhAwk/TDA"
+#define K_VERSION "v2.2b"
+#define K_COPYRIGHT "copyright (c) 2015 firEhAwk/TDA"
 #define K_ABOUT "this is a development version - so\nsave early, save often! :) report\nbugs to firehawk(at)haxor.fi"
 
 // screen size
