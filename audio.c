@@ -49,6 +49,8 @@ long render_playpos;
 int render_start;
 int render_measures;
 
+// looping play
+int render_live_loop;
 
 // from synthesizer.c
 extern synthmodule mod[MAX_SYNTH][MAX_MODULES];
@@ -117,6 +119,8 @@ int audio_initialize(void)
   render_buffer=NULL;
   render_state=RENDER_STOPPED;
   render_type=RENDER_LIVE;
+  
+  render_live_loop=0;
 
   dev=NULL;
   ctx=NULL;
@@ -401,9 +405,9 @@ long audio_render(void)
   bufferlen = (render_bufferlen) - render_pos;  
   buffer=&render_buffer[render_pos*2];
 
-  // when playing live,. we want to keep render_pos no more than than 2*bufferlen
-  // ahead of render_playpos to allow changes to patches during playback.
-  if (render_state==RENDER_LIVE && render_pos >= (render_playpos+2*bufferlen)) return 0;
+  // when playing live,. we want to keep render_pos no more than than AUDIO_RENDER_AHEAD
+  // buffers ahead of render_playpos to allow changes to patches during playback.
+  if (render_state==RENDER_LIVE && render_pos >= (render_playpos+AUDIO_RENDER_AHEAD*bufferlen)) return 0;
 
   // loop for each sample in buffer
   for(i=0;i<bufferlen;i++) {

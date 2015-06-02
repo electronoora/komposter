@@ -21,6 +21,11 @@
 // some Linux machines to cure stuttering sound
 //#define AUDIOBUFFER_LEN 4096
 
+// how many buffers to render ahead of playback.
+// this and bufferlen above have a direct effect
+// on the latency.
+#define AUDIO_RENDER_AHEAD	2
+
 #define OUTPUTFREQ 44100
 
 #define AUDIOMODE_MUTE		0

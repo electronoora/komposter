@@ -4,10 +4,9 @@
 # auto-detects the platform and sets specific build options accordingly
 #
 
-VERSION=2.0b1
+VERSION=2.2b
 
-# Set the location of your OS X 10.6 SDK
-#SDK=/Developer/SDKs/MacOSX10.6.sdk
+# Set the location of your OS X 10.9 SDK
 SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
 
 CC=gcc
