@@ -112,6 +112,8 @@ int seq_transpose[MAX_CHANNELS][MAX_SONGLEN];
 int seq_patch[MAX_CHANNELS][MAX_SONGLEN];
 
 
+// from main
+extern int cpage;
 
 // from modules.c
 extern int gate[MAX_SYNTH];
@@ -119,6 +121,7 @@ extern int gate[MAX_SYNTH];
 // from pattern.c
 extern unsigned int pattlen[MAX_PATTERN];
 extern int cpatch[MAX_SYNTH];
+extern int cpatt;
 
 // from synthesizer.c
 extern char synthname[MAX_SYNTH][128];
@@ -571,6 +574,13 @@ void sequencer_mouse_click(int button, int state, int x, int y)
           seq_pattern[seq_drag_pattch][seq_drag_pattstart]=-1;
           for(i=1;i<pl;i++) seq_pattern[seq_drag_pattch][j+i]=-1;
           i=sequencer_cursorpos(x, y, &seq_hover_ch, &seq_hover_meas); // extra hovercheck to move the cursor as well
+        } else {
+          // pattern was clicked but not dragged anywhere - jump to pattern page and select the pattern
+          i=sequencer_patternstart(seq_hover_ch, seq_hover_meas);
+          
+          cpatt=seq_pattern[seq_hover_ch][i];
+          console_post("Patterns");
+          cpage=3;
         }
       }
     } 
@@ -1031,23 +1041,6 @@ void sequencer_draw(void)
   draw_button(372, DS_HEIGHT-14, 16, "L", seq_ui[B_LOAD_SONG]);
 
   draw_button(394, DS_HEIGHT-14, 16, "N", seq_ui[B_NEWSONG]);
-
-
-  // draw peak meter and reset button
-/*
-  float rf=fmin(1.0f, audio_latest_peak);
-  draw_textbox(728, DS_HEIGHT-14, 16, 100, "", 0); 
-  glColor4f(0.68f, 0.33f, 0.0f, 0.94f);
-  glBegin(GL_QUADS);
-  glVertex2f(678, DS_HEIGHT-22);
-  glVertex2f(678 + rf*100, DS_HEIGHT-22);
-  glVertex2f(678 + rf*100, DS_HEIGHT-6);
-  glVertex2f(678, DS_HEIGHT-6);
-  glEnd();
-
-  sprintf(tmps, "%1.2f", audio_peak);
-  render_text(tmps, 782, DS_HEIGHT-11, 2, (audio_peak > 1.0f) ? 0xffff8080 : 0xffffffff, 0);
-*/
   
 }
 
@@ -1387,11 +1380,7 @@ void sequencer_draw_preview(void)
   sprintf(tmps, "%6.2f s", s);  
   draw_button((DS_WIDTH/2)-40, (DS_HEIGHT/2)+92, 16, "i<", seq_ui[B_PREVIEW_REWIND]);
   draw_textbox((DS_WIDTH/2), (DS_HEIGHT/2)+92, 16, 52, tmps, seq_ui[B_PREVIEW_PLAY]);  
-
-///  
   draw_button((DS_WIDTH/2)+100, (DS_HEIGHT/2)+92, 16, "w", seq_ui[B_PREVIEW_EXPORT]);
-///
-
 }
 
 
@@ -1401,9 +1390,7 @@ void sequencer_preview_hover(int x, int y)
   seq_ui[B_PREVIEW_PLAY]=hovertest_box(x, y, (DS_WIDTH/2), (DS_HEIGHT/2)+92, 16, 52);
   if (render_state==RENDER_PLAYBACK) seq_ui[B_PREVIEW_PLAY]|=2;
 
-///
   seq_ui[B_PREVIEW_EXPORT]=hovertest_box(x, y, (DS_WIDTH/2)+100, (DS_HEIGHT/2)+92, 16, 16);
-///
   
   // hovering on render preview
   seq_render_hover=-1;
@@ -1430,19 +1417,13 @@ void sequencer_preview_click(int button, int state, int x, int y)
       }
       if (seq_ui[B_PREVIEW_REWIND]) { render_playpos=0; return; }
 
-      
       // wav dump button
-///
       if (seq_ui[B_PREVIEW_EXPORT]) { 
-        audio_exportwav(); //"render_dump.wav");
-//        console_post("Rendered audio written to disk as render_dump.wav");
+        audio_exportwav();
         return;
       }
-///
-     
       
       if (seq_render_hover>=0) { render_playpos=seq_render_hover; return; }
-      
     }
   }
 
@@ -1531,6 +1512,8 @@ void sequencer_file_checkstate(void)
           csynth=0;
           for(i=0;i<MAX_SYNTH;i++) cpatch[i]=0;
           audio_loadpatch(0, csynth, cpatch[csynth]);
+          seq_render_start=0;
+          seq_render_end=0;
           console_post("Song loaded successfully from disk!");
         }
         synth_releaseaudio();
