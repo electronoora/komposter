@@ -174,7 +174,7 @@ void keyboardupfunc(unsigned char key, int x, int y)
 
 void specialkeyfunc(int key, int x, int y)
 {
-  if (is_dialog()) return;
+  if (is_dialog()) { dialog_special(key, x, y); return; }
 
   // page handlers for special keys
   switch (cpage)

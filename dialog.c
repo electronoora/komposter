@@ -21,6 +21,7 @@ void (*dialog_hoverfunc)(int,int) = NULL;
 void (*dialog_clickfunc)(int,int,int,int) = NULL;
 void (*dialog_kbfunc)(unsigned char,int,int) = NULL;
 void (*dialog_dragfunc)(int,int) = NULL;
+void (*dialog_specialfunc)(int,int,int) = NULL;
 
 int is_dialog(void)
 {
@@ -55,6 +56,11 @@ void dialog_binddrag(void *dragfunc)
   dialog_dragfunc=dragfunc;
 }
 
+void dialog_bindspecial(void *specialfunc)
+{
+  dialog_specialfunc=specialfunc;
+}
+
 void dialog_close(void)
 {
   dialog_active=0;
@@ -63,6 +69,7 @@ void dialog_close(void)
   dialog_clickfunc=NULL;
   dialog_kbfunc=NULL;
   dialog_dragfunc=NULL;
+  dialog_specialfunc=NULL;
 }
 
 
@@ -79,7 +86,7 @@ void dialog_hover(int x, int y)
 
 void dialog_click(int button, int state, int x, int y)
 {
-  dialog_clickfunc(button, state, x, y);
+  if (dialog_clickfunc) dialog_clickfunc(button, state, x, y);
 }
 
 void dialog_keyboard(unsigned char key, int x, int y)
@@ -89,5 +96,10 @@ void dialog_keyboard(unsigned char key, int x, int y)
 
 void dialog_drag(int x, int y)
 {
-  dialog_dragfunc(x, y);
+  if (dialog_dragfunc) dialog_dragfunc(x, y);
+}
+
+void dialog_special(int key, int x, int y)
+{
+  if (dialog_specialfunc) dialog_specialfunc(key, x, y);
 }

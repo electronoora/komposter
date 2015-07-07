@@ -21,6 +21,7 @@ int is_dialogdrag(void);
 
 void dialog_open(void *draw, void *hover, void *click);
 void dialog_bindkeyboard(void *kbfunc);
+void dialog_bindspecial(void *specialfunc);
 void dialog_close(void);
 
 void dialog_draw(void);
@@ -29,5 +30,6 @@ void dialog_click(int button, int state, int x, int y);
 void dialog_keyboard(unsigned char key, int x, int y);
 void dialog_binddrag(void *dragfunc);
 void dialog_drag(int x, int y);
+void dialog_special(int key, int x, int y);
 
 #endif

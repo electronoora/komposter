@@ -73,6 +73,9 @@ char patchname[MAX_SYNTH][MAX_PATCHES][128];
 float modvalue[MAX_SYNTH][MAX_PATCHES][MAX_MODULES];
 int modquantifier[MAX_SYNTH][MAX_PATCHES][MAX_MODULES];
 
+float patch_modulator_floatval;
+int patch_modulator_intval;
+
 
 void patch_init()
 {
@@ -259,14 +262,17 @@ void patch_mouse_click(int button, int state, int x, int y)
             default:
               switch(modModulatorTypes[mod[csynth][mi].type]) {
                 case 1: // float
-                  sprintf(modeditbox, "%g", 
-                    knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]));
+                  patch_modulator_floatval=knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]);
+                  sprintf(modeditbox, "%g", patch_modulator_floatval);
+//                    knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]));
                   break;
                 case 2: // integer
+                  patch_modulator_intval=modvalue[ csynth ][cpatch[csynth]][ mi ];
                   break;
               }
               dialog_open(&patch_draw_modulator, &patch_modulator_hover, &patch_modulator_click);
               dialog_bindkeyboard(&patch_modulator_keyboard);
+              dialog_bindspecial(&patch_modulator_special);
               break;
           }
           return;
@@ -401,11 +407,10 @@ void patch_draw(void)
       case 5: sprintf(tmps, "%s", modVcfModes[(int)(modvalue[csynth][cpatch[csynth]][mi])]);break; // vcf mode
       case 6: sprintf(tmps, "%s", modDelayModes[(int)(modvalue[csynth][cpatch[csynth]][mi])]);break; // delay mode
     }
-    if (mt==MOD_CV) sprintf(tmps, "%f hz", pitch[0]); //modulator[ 0 ][ cpatch[csynth] ][ mi ]);
+    if (mt==MOD_CV) sprintf(tmps, "%f hz", pitch[0]);
     render_text(tmps, x+250, 20+mm*16-yd, 2, 0xffc0c0c0, 0);
     m++; mm++;
   }
-
   
   // draw the piano keyboard for jazzing with the patch :)
   rkdown=-1;
@@ -455,7 +460,6 @@ void patch_draw_modulator(void)
   render_text(tmps, (DS_WIDTH/2)-108, (DS_HEIGHT/2)-46, 0, 0xffb05500, 0);
   render_text("esc/right click to close", (DS_WIDTH/2)+111, (DS_HEIGHT/2)+72, 2, 0xffc0c0c0, 2);
 
-
   render_text((char*)knobScaleNames[mod[csynth][mi].scale], (DS_WIDTH/2)-104, (DS_HEIGHT/2)-18, 2, 0xffc0c0c0, 0);
   draw_textbox((DS_WIDTH/2)+54, (DS_HEIGHT/2)-20, 16, 100, modeditbox, modulator_ui[B_MOD_VALUE]);  
   
@@ -485,7 +489,6 @@ void patch_draw_modulator(void)
 
     render_text("raw:", (DS_WIDTH/2)-104, (DS_HEIGHT/2)+50, 2, 0xffc0c0c0, 0);
     render_text(raws, (DS_WIDTH/2)+34, (DS_HEIGHT/2)+50, 2, 0xfff0f0f0, 1);
-    
   }
 }
 
@@ -550,6 +553,37 @@ void patch_modulator_click(int button, int state, int x, int y)
   }
 }
 
+
+void patch_modulator_special(int key, int x, int y)
+{
+  int mi, i;
+  float f;
+
+  /*
+    left/right = change value by 1% of original value
+    up/down = change value by 10% of original value
+  */
+
+  mi=signalfifo[csynth][cphover];
+  switch(modModulatorTypes[mod[csynth][mi].type]) {
+    case 1: //float, value is already to scale
+      f=knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]);
+      if (key==GLUT_KEY_RIGHT) f+=0.01 * patch_modulator_floatval;
+      if (key==GLUT_KEY_LEFT) f-=0.01 * patch_modulator_floatval;
+      if (key==GLUT_KEY_UP) f+=0.1 * patch_modulator_floatval;
+      if (key==GLUT_KEY_DOWN) f-=0.1 * patch_modulator_floatval;
+      modvalue[ csynth ][cpatch[csynth]][ mi ]=knob_scale2float(mod[csynth][mi].scale, f);
+      sprintf(modeditbox, "%g", f);
+    break;
+    
+    case 2: //integer
+    break;
+    
+    default:
+    break;
+  }
+}
+
 void patch_modulator_keyboard(unsigned char key, int x, int y)
 {
   int mi,i,j;
@@ -557,11 +591,15 @@ void patch_modulator_keyboard(unsigned char key, int x, int y)
   unsigned long fmask, *fptr;
 
   mi=signalfifo[csynth][cphover];
+  
+  // already has kb focus?
   if (modkbfocus==B_MOD_VALUE) {
+    
     if (key==13) { modulator_ui[B_MOD_VALUE]&=0x03; modkbfocus=-1; glutIgnoreKeyRepeat(1); } // enter
     textbox_edit(modeditbox, key, 16);
     return;
   }
+  
   if (key==13) { // enter
     switch(modModulatorTypes[mod[csynth][mi].type]) {
       case 1: // float

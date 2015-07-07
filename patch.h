@@ -37,6 +37,7 @@ void patch_draw_modulator(void);
 void patch_modulator_hover(int x, int y);
 void patch_modulator_click(int button, int state, int x, int y);
 void patch_modulator_keyboard(unsigned char key, int x, int y);
+void patch_modulator_special(int key, int x, int y);
 
 // conversions to/from scale values 
 float knob_scale2float(int scale, float value);
