@@ -49,6 +49,8 @@ int audio_process(short *buffer, long bufferlen);
 
 void audio_loadpatch(int voice, int synth, int patch);
 void audio_trignote(int voice, int note);
+
+void audio_panic(void);
 void audio_resetsynth(int voice);
 
 int audio_exportwav(); //char *filename);

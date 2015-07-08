@@ -291,7 +291,7 @@ int audio_process(short *buffer, long bufferlen)
         render_playpos=0; //+=copylen;
         if (copylen < bufferlen) {
           // restart playing from start of render buffer, copy rest of buffer from there
-          memcpy(&buffer[copylen], &render_buffer, (bufferlen-copylen)*4);
+          memcpy(&buffer[copylen], &render_buffer[0], (bufferlen-copylen)*4);
           render_playpos+=bufferlen-copylen;
         }
         render_played_loops++;
@@ -552,6 +552,7 @@ long audio_render(void)
           // loop back to start
           render_pos=0;
           render_loops++;
+          audio_panic();
         }
       } else {
         render_state=RENDER_COMPLETE; return i;
@@ -592,6 +593,14 @@ void audio_trignote(int voice, int note)
 }
 
 
+// panic reset - completely resets all modules
+void audio_panic(void)
+{
+  int voice;
+  for(voice=0;voice<seqch;voice++) audio_resetsynth(voice);
+}
+
+
 // reset a synth voice so that it no longer produces sound
 void audio_resetsynth(int voice)
 {
@@ -606,10 +615,16 @@ void audio_resetsynth(int voice)
     mi=signalfifo[synth][m];
     mt=mod[synth][mi].type;
     switch(mt) {
+      case MOD_WAVEFORM:
+        memset(&localdata[voice][mi][0], 0, 2*sizeof(float));        
+        break;
       case MOD_ADSR:
        localdata[voice][mi][0]=0;
        output[voice][mi]=0;
        break;
+      case MOD_LFO:
+        memset(&localdata[voice][mi][0], 0, 2*sizeof(float));
+        break;
       case MOD_DELAY:
           // !!!! this doesn't compile on xcode 4.1 LLVM
         memcpy(&lbuf, &localdata[voice][mi][0], sizeof(float*));
@@ -617,6 +632,12 @@ void audio_resetsynth(int voice)
         if (lbuf)
           for(i=0;i<modDataBufferLength[MOD_DELAY];i++) lbuf[i]=0.0f;
        break;
+      case MOD_FILTER:
+        memset(&localdata[voice][mi][0], 0, 3*sizeof(float));
+        break;
+      case MOD_LPF24:
+        memset(&localdata[voice][mi][0], 0, 8*sizeof(float));
+        break;
       case MOD_OUTPUT:
         output[voice][mi]=0;
         break;

@@ -222,7 +222,12 @@ void sequencer_toggleplayback() {
   seq_ui[B_SEQPLAY]&=1;
   seq_ui[B_SEQPLAY]|=(seq_playing<<1);
   // TODO: reset all synths every time play starts/stops
-  if (seq_playing) { audiomode=AUDIOMODE_PLAY; } else { audiomode=AUDIOMODE_COMPOSING; }
+  if (seq_playing) {
+    audiomode=AUDIOMODE_PLAY;
+  } else {
+    audio_panic();
+    audiomode=AUDIOMODE_COMPOSING;
+  }
 }
 
 
