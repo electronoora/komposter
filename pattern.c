@@ -273,7 +273,7 @@ void pattern_mouse_click(int button, int state, int x, int y)
       // click on the piano roll?
       if (piano_hover>=0) {
       
-        if (piano_note) {
+        if (piano_note==(pattdata[cpatt][piano_start+piano_hover]&0xff)) {
           // clicked on an existing note, start drag up/down
           j=piano_hover;
           if (pattdata[cpatt][piano_start+j]&NOTE_LEGATO) {
