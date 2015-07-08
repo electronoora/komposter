@@ -51,6 +51,8 @@
 #define B_NEWSONG		28
 #define B_RENDER		29
 
+#define B_LOOP			30
+
 
 #define SEQUENCER_Y 14.5
 #define SEQUENCER_X 45.5
@@ -97,7 +99,7 @@ int seq_drag_pattstart; // the first measure of the pattern being dragged
 int seq_drag_droppos; // where the pattern is currently dragged to (draw ghost here)
 int seq_drag_pattch;
 
-int seq_ui[30];
+int seq_ui[31];
 
 int seq_add_patt;
 int seq_add_repeat;
@@ -140,6 +142,7 @@ extern long render_playpos;
 extern int render_type;
 extern float audio_peak;
 extern float audio_latest_peak;
+extern int render_live_loop;
 
 
 // initialize seq data to defaults
@@ -332,6 +335,8 @@ void sequencer_mouse_hover(int x, int y)
   seq_ui[B_REWIND]=hovertest_box(x, y, 440, DS_HEIGHT-14, 16, 16);
 
   seq_ui[B_NEWSONG]=hovertest_box(x, y, 394, DS_HEIGHT-14, 16, 16) | (seq_ui[B_NEWSONG]&8);
+  
+  seq_ui[B_LOOP]=hovertest_box(x, y, 630, DS_HEIGHT-14, 16, 48);
 
   seq_ui[B_SEQPLAY]&=0xfe; seq_ui[B_RENDER]=0;
   if (seq_render_start >= 0 && seq_render_end >= 0 && seq_render_start < seq_render_end) {
@@ -486,7 +491,7 @@ void sequencer_mouse_click(int button, int state, int x, int y)
         return;
       }
  
-
+      if (seq_ui[B_LOOP]) render_live_loop^=1;
 
       // click on the slider?
       if (seqslide_hover) {
@@ -967,8 +972,6 @@ void sequencer_draw(void)
       glVertex2f(SEQUENCER_X+f*SEQUENCER_CELLWIDTH, SEQUENCER_Y+(seqch+3)*SEQUENCER_CELLHEIGHT);
       glEnd();
     }
-
-
   }  
   
   // channel numbers
@@ -1039,6 +1042,8 @@ void sequencer_draw(void)
   
   draw_button(350, DS_HEIGHT-14, 16, "S", seq_ui[B_SAVE_SONG]);
   draw_button(372, DS_HEIGHT-14, 16, "L", seq_ui[B_LOAD_SONG]);
+
+  draw_textbox(630, DS_HEIGHT-14, 16, 48, "loop", seq_ui[B_LOOP] | (render_live_loop ? 2 : 0));
 
   draw_button(394, DS_HEIGHT-14, 16, "N", seq_ui[B_NEWSONG]);
   

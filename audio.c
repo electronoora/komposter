@@ -51,6 +51,8 @@ int render_measures;
 
 // looping play
 int render_live_loop;
+int render_loops;
+int render_played_loops;
 
 // from synthesizer.c
 extern synthmodule mod[MAX_SYNTH][MAX_MODULES];
@@ -121,6 +123,8 @@ int audio_initialize(void)
   render_type=RENDER_LIVE;
   
   render_live_loop=0;
+  render_loops=0;
+  render_played_loops=0;
 
   dev=NULL;
   ctx=NULL;
@@ -268,6 +272,8 @@ int audio_process(short *buffer, long bufferlen)
       render_state=render_type;
       render_playpos=0;
       render_oldtick=-1;
+      render_loops=0;
+      render_played_loops=0;
     }
 
     // if we're playing live, make sure there's enough unplayed audio in the render
@@ -275,18 +281,48 @@ int audio_process(short *buffer, long bufferlen)
     // is too slow for the number of channels/synths used, the audio output will have
     // gaps as no data at all is copied to output if there's not enough to fill one
     // buffer.
-    if (render_state==RENDER_PLAYBACK  ||
-        ((render_state==RENDER_LIVE || render_state==RENDER_LIVE_COMPLETE) && render_pos>=(render_playpos+bufferlen))
-       ) {
+    if (render_state==RENDER_LIVE && render_live_loop) {
+      // copy as usual
       copylen=bufferlen;
-      if ((render_playpos+copylen) > render_bufferlen)
+      if ((render_playpos+copylen) >= render_bufferlen) {
+        // can't get a full buffer
         copylen = render_bufferlen - render_playpos;
-      memcpy(buffer, &render_buffer[render_playpos*2], copylen*4);
-      render_playpos+=copylen;
-      if (render_playpos >= render_bufferlen) {
+        memcpy(buffer, &render_buffer[render_playpos*2], copylen*4);
+        render_playpos=0; //+=copylen;
+        if (copylen < bufferlen) {
+          // restart playing from start of render buffer, copy rest of buffer from there
+          memcpy(&buffer[copylen], &render_buffer, (bufferlen-copylen)*4);
+          render_playpos+=bufferlen-copylen;
+        }
+        render_played_loops++;
+      } else {
+        memcpy(buffer, &render_buffer[render_playpos*2], copylen*4);
+        render_playpos+=copylen;        
+      }
+    }
+    if (render_state==RENDER_PLAYBACK  ||
+        ((render_state==RENDER_LIVE || render_state==RENDER_LIVE_COMPLETE) && render_pos>=(render_playpos+bufferlen) && !render_live_loop)
+       )
+    {
+      copylen=bufferlen;
+      if ((render_playpos+copylen) >= render_bufferlen) {
+        // at end of renderbuffer - copy last full or partial buffer to playback buffer
+        copylen = render_bufferlen - render_playpos;
+        memcpy(buffer, &render_buffer[render_playpos*2], copylen*4);
+        render_playpos+=copylen;
+        if (copylen < bufferlen) {
+          // fill the rest of the playback buffer with zero
+          memset(&buffer[copylen], 0, (bufferlen-copylen)*4);
+        }
+
+        // stop playback and reset synths to clear any sounds left playing
         render_state=RENDER_COMPLETE; render_playpos=0;
-        // reset the synths to clear any sounds that may have been left playing
         for(i=0;i<seqch;i++) audio_resetsynth(i);
+
+      } else {
+        // copy a full buffer from renderbuffer to playback buffer
+        memcpy(buffer, &render_buffer[render_playpos*2], copylen*4);
+        render_playpos+=copylen;        
       }
     }
 
@@ -405,9 +441,18 @@ long audio_render(void)
   bufferlen = (render_bufferlen) - render_pos;  
   buffer=&render_buffer[render_pos*2];
 
-  // when playing live,. we want to keep render_pos no more than than AUDIO_RENDER_AHEAD
+  // when playing live, we want to keep render_pos no more than than AUDIO_RENDER_AHEAD
   // buffers ahead of render_playpos to allow changes to patches during playback.
-  if (render_state==RENDER_LIVE && render_pos >= (render_playpos+AUDIO_RENDER_AHEAD*bufferlen)) return 0;
+  if (render_live_loop) {
+    if (render_loops > render_played_loops) {
+      // render has looped back but playback is still rendering
+      if (render_pos >= AUDIO_RENDER_AHEAD*bufferlen) return 0;
+    } else {
+      if (render_state==RENDER_LIVE && render_pos >= (render_playpos+AUDIO_RENDER_AHEAD*bufferlen)) return 0;      
+    }
+  } else {
+    if (render_state==RENDER_LIVE && render_pos >= (render_playpos+AUDIO_RENDER_AHEAD*bufferlen)) return 0;
+  }
 
   // loop for each sample in buffer
   for(i=0;i<bufferlen;i++) {
@@ -500,7 +545,14 @@ long audio_render(void)
     render_pos++;
     if (render_pos >= render_bufferlen) {
       if (render_state==RENDER_LIVE) {
-        render_state=RENDER_LIVE_COMPLETE; return i;
+        if (!render_live_loop) {
+          render_state=RENDER_LIVE_COMPLETE;
+          return i;
+        } else {
+          // loop back to start
+          render_pos=0;
+          render_loops++;
+        }
       } else {
         render_state=RENDER_COMPLETE; return i;
       }
