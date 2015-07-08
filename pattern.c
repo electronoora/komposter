@@ -80,7 +80,7 @@ float slide_drag_xofs;
 int slide_drag, slide_drag_start;
 int patt_cpatch;
 
-int piano_porta_drag, piano_porta_drag_len;
+int piano_porta_drag, piano_porta_drag_len, piano_porta_drag_from;
 
 // initialize pattern data to defaults
 void pattern_init()
@@ -282,7 +282,7 @@ void pattern_mouse_click(int button, int state, int x, int y)
           for(l=1; pattdata[cpatt][piano_start+j+l]&NOTE_LEGATO; l++);
           piano_porta_drag=j;
           piano_porta_drag_len=l;
-          
+          piano_porta_drag_from=pattdata[cpatt][piano_start+j]&0xff;
         } else {
           // create a new note - set the 1/16th note on the pattern
           pattdata[cpatt][piano_start+piano_hover]=piano_note;
@@ -556,26 +556,36 @@ void pattern_draw(void)
 
   // drag an existing note up or down
   if (piano_porta_drag >= 0) {
-
-        glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
-        glBegin(GL_QUADS);
-          glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
-          glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
-          glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
-          glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
-        glEnd();    
+    n=pattdata[cpatt][piano_start+piano_porta_drag];
+    glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
+    glBegin(GL_QUADS);
+    glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
+    glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
+    glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+    glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+    glEnd();
+    if (piano_porta_drag_from != pattdata[cpatt][piano_start+piano_porta_drag]) {
+      n=piano_porta_drag_from;
+      glColor4ub(0x90, 0x90, 0x90, 0x6f);
+      glBegin(GL_QUADS);
+      glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
+      glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
+      glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+      glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+      glEnd();    
+    }
   }
 
   // draw the new note being dragged onto piano roll
   if (piano_drag >= 0) {
     n=pattdata[cpatt][piano_start+piano_drag];
-        glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
-        glBegin(GL_QUADS);
-          glVertex2f(1+PIANOROLL_X+piano_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
-          glVertex2f(PIANOROLL_X+(piano_dragto+1)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
-          glVertex2f(PIANOROLL_X+(piano_dragto+1)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
-          glVertex2f(1+PIANOROLL_X+piano_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
-        glEnd();    
+    glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
+    glBegin(GL_QUADS);
+    glVertex2f(1+PIANOROLL_X+piano_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
+    glVertex2f(PIANOROLL_X+(piano_dragto+1)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
+    glVertex2f(PIANOROLL_X+(piano_dragto+1)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+    glVertex2f(1+PIANOROLL_X+piano_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+    glEnd();    
   }
 
   // highlight the note row if a key is currently down
