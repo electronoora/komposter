@@ -708,6 +708,8 @@ void synth_addmodule_hover(int x, int y)
 void synth_addmodule_click(int button, int state, int x, int y)
 {
   int m;
+
+  if (state==GLUT_DOWN && !hovertest_box(x, y, (DS_WIDTH/2), (DS_HEIGHT/2), 260, 526)) { dialog_close(); return; }
   
   if (button==GLUT_RIGHT_BUTTON && hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),260,526)) {
     for(m=0;m<6;m++) synth_ui[m]&=0x06;
@@ -856,6 +858,8 @@ void synthlabel_hover(int x, int y)
 
 void synthlabel_click(int button, int state, int x, int y)
 {
+  if (state==GLUT_DOWN && !hovertest_box(x, y, (DS_WIDTH/2), (DS_HEIGHT/2), 120, 280)) { dialog_close(); return; }
+
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (synth_label_kbfocus) {

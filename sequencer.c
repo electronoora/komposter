@@ -1114,9 +1114,14 @@ void sequencer_pattern_click(int button, int state, int x, int y)
 {
   int i;
 
+  if (state==GLUT_DOWN && !hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),150,240 )) {
+    dialog_close(); return;
+  }
+
   if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN && hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),150,240 )) {
     dialog_close(); return; 
   }
+  
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (seq_ui[B_PATT_ADDNUM])   { if (seq_add_patt<MAX_PATTERN) seq_add_patt++; }
@@ -1196,6 +1201,12 @@ void sequencer_channel_hover(int x, int y)
 
 void sequencer_channel_click(int button, int state, int x, int y)
 {
+  if (state==GLUT_DOWN && !hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),150,240 )) {
+    kmm_gcollect();
+    dialog_close();
+    return;
+  }
+
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
       if (seq_ui[B_CHAN_NEXTSYNTH]) { 
@@ -1234,6 +1245,7 @@ void sequencer_channel_click(int button, int state, int x, int y)
 void sequencer_channel_keyboard(unsigned char key, int x, int y)
 {
   if (key==27) {
+    kmm_gcollect();
     dialog_close(); return; 
   }  
 }    

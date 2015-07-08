@@ -507,6 +507,12 @@ void patch_modulator_click(int button, int state, int x, int y)
   float f;
   unsigned long fmask, *fptr;
   
+  if (state==GLUT_DOWN && !hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),120,226 )) {
+    glutIgnoreKeyRepeat(1);
+    dialog_close();
+    return;
+  }
+  
   mi=signalfifo[csynth][cphover];
   if (button==GLUT_RIGHT_BUTTON && hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),120,226 )) {
     // read the edit box contents back to the modulator
@@ -556,7 +562,7 @@ void patch_modulator_click(int button, int state, int x, int y)
 
 void patch_modulator_special(int key, int x, int y)
 {
-  int mi, i;
+  int mi;
   float f;
 
   /*

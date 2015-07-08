@@ -32,8 +32,6 @@ void about_hover(int x, int y)
 
 void about_click(int button, int state, int x, int y)
 {
-  if (state==GLUT_UP && hovertest_box(x,y,(DS_WIDTH/2),(DS_HEIGHT/2),120,250)) {
-    dialog_close(); return;
-  }
+  if (state==GLUT_DOWN) { dialog_close(); return; }
 }
 

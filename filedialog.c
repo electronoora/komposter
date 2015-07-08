@@ -10,6 +10,7 @@
  * $Date$
  */
 
+#include "dialog.h"
 #include "filedialog.h"
 
 void filedialog_open(filedialog *fd, char *ext, char *path)
@@ -159,6 +160,8 @@ void filedialog_click(filedialog *fd, int button, int state, int x, int y)
   int r;
   struct stat sb;
   char tmps[255], ttmps[255], *tptr;;
+
+  if (state==GLUT_DOWN && !hovertest_box(x, y, (DS_WIDTH/2), (DS_HEIGHT/2), 244, 420)) { dialog_close(); return; }
 
   if (state==GLUT_UP) { fd->sliderdrag=0; return; }
 
