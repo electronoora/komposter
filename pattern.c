@@ -80,6 +80,7 @@ float slide_drag_xofs;
 int slide_drag, slide_drag_start;
 int patt_cpatch;
 
+int piano_porta_drag, piano_porta_drag_len;
 
 // initialize pattern data to defaults
 void pattern_init()
@@ -95,6 +96,7 @@ void pattern_init()
   piano_note=-1; piano_hover=-1; piano_drag=-1; piano_dragto=-1;
   piano_start=0; slide_hover=0;
   patt_cpatch=0;
+  piano_porta_drag=-1; piano_porta_drag_len=0;
   for(i=0;i<13;i++) patt_ui[i]=0;
 }
 
@@ -129,7 +131,7 @@ int pattern_cursorpos(int x, int y, int *note)
   {
     cx=(int)((x-PIANOROLL_X)/PIANOROLL_CELLWIDTH)-1;
     cy=abs((int)((y-PIANOROLL_Y-2)/PIANOROLL_CELLHEIGHT));
-    *note=coct*12+cy;
+    if (note) *note=coct*12+cy;
     return cx;
   }
   return -1;
@@ -171,7 +173,7 @@ void pattern_mouse_hover(int x, int y)
 
 void pattern_mouse_drag(int x, int y)
 {
-  int m,note;
+  int m,n,note,i;
   float f, cos, cip, sbw, slw;
 
   // dragging a new note, paint all cells from drag point to current cell
@@ -193,12 +195,26 @@ void pattern_mouse_drag(int x, int y)
     if (piano_start<0) piano_start=0;
     return;
   }
+  
+  if (piano_porta_drag >= 0) {
+    n=pattdata[cpatt][piano_start+piano_porta_drag]; // current note being dragged
+    m=pattern_cursorpos(x, y, &note);
+    if (note != n) {
+      // replace the note on the pattern data
+      for(i=0;i<piano_porta_drag_len;i++) {
+        pattdata[cpatt][piano_start+piano_porta_drag+i]&=0xff80;
+        pattdata[cpatt][piano_start+piano_porta_drag+i]|=note&0xff;
+      }
+      piano_note=note&0xff;
+      //audio_trignote(0, piano_note); // audio feedback      
+    }
+  }
 }
 
 
 void pattern_mouse_click(int button, int state, int x, int y)
 {
-  int i,m;
+  int i,m,j,l;
   char tmps[256];
 
   if (button==GLUT_LEFT_BUTTON) {
@@ -256,13 +272,26 @@ void pattern_mouse_click(int button, int state, int x, int y)
       
       // click on the piano roll?
       if (piano_hover>=0) {
-        // yes - set the 1/16th note on the pattern
-        pattdata[cpatt][piano_start+piano_hover]=piano_note;
-        piano_drag=piano_hover; //drag note stating from this cell
-        piano_dragto=piano_hover;
+      
+        if (piano_note) {
+          // clicked on an existing note, start drag up/down
+          j=piano_hover;
+          if (pattdata[cpatt][piano_start+j]&NOTE_LEGATO) {
+            while (pattdata[cpatt][piano_start+j]&NOTE_LEGATO) j--;
+          }
+          for(l=1; pattdata[cpatt][piano_start+j+l]&NOTE_LEGATO; l++);
+          piano_porta_drag=j;
+          piano_porta_drag_len=l;
+          
+        } else {
+          // create a new note - set the 1/16th note on the pattern
+          pattdata[cpatt][piano_start+piano_hover]=piano_note;
+          piano_drag=piano_hover; //drag note stating from this cell
+          piano_dragto=piano_hover;
         
-        // trig the note to get an audible feedback
-        audio_trignote(0, piano_note);
+          // trig the note to get an audible feedback
+          audio_trignote(0, piano_note);
+        }
       }
       
       // click on the slider?
@@ -283,6 +312,12 @@ void pattern_mouse_click(int button, int state, int x, int y)
         piano_dragto=-1;
 
         gate[0]=0; // note off
+      }
+      if (piano_porta_drag>=0) {
+        piano_porta_drag=-1;
+        piano_porta_drag_len=0;
+
+        gate[0]=0; // note off        
       }
     } 
   }            
@@ -495,7 +530,43 @@ void pattern_draw(void)
     }
   }
 
-  // draw the note being dragged
+  // draw the note highlighted by cursor
+  if (piano_hover >= 0) {
+    n=pattdata[cpatt][piano_start+piano_hover]&0xff;
+    if (n>0 && piano_note==n) {
+      j=piano_hover;
+      if (pattdata[cpatt][piano_start+j]&NOTE_LEGATO) {
+        // search backwards to find start of note
+        while (pattdata[cpatt][piano_start+j]&NOTE_LEGATO) j--;
+      }
+      for(l=1; pattdata[cpatt][piano_start+j+l]&NOTE_LEGATO; l++);
+
+      glColor4f(0.8, 0.8, 0.8, 0.8);
+      glEnable(GL_LINE_STIPPLE);
+      glLineStipple(1, 0x3333);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(1+PIANOROLL_X+j*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
+      glVertex2f(PIANOROLL_X+(j+l)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
+      glVertex2f(PIANOROLL_X+(j+l)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+      glVertex2f(1+PIANOROLL_X+j*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+      glEnd();        
+      glDisable(GL_LINE_STIPPLE);        
+    }
+  }
+
+  // drag an existing note up or down
+  if (piano_porta_drag >= 0) {
+
+        glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
+        glBegin(GL_QUADS);
+          glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);
+          glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-1-(n-coct*12)*PIANOROLL_CELLHEIGHT);          
+          glVertex2f(PIANOROLL_X+(piano_porta_drag+piano_porta_drag_len)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+          glVertex2f(1+PIANOROLL_X+piano_porta_drag*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(n-coct*12+1)*PIANOROLL_CELLHEIGHT);
+        glEnd();    
+  }
+
+  // draw the new note being dragged onto piano roll
   if (piano_drag >= 0) {
     n=pattdata[cpatt][piano_start+piano_drag];
         glColor4ub(0xc0, 0xc0, 0xc0, 0x6f);
