@@ -24,7 +24,7 @@
 // flags for notes
 #define NOTE_LEGATO     0x0100 // tie notes together, ie. gate stays up continuously
 #define NOTE_ACCENT     0x0200 // accent the note - synth determines the effect
-#define NOTE_STACCATO   0x0400 // drop gate with env trig at the end of attack
+#define NOTE_STACCATO   0x0400 // drop gate with env trig at the end of attack (not implemented)
 #define NOTE_PORTAMENTO 0x0800 // slide to this note in the given duration (not implemented)
 
 void pattern_init(void);

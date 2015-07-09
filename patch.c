@@ -563,7 +563,7 @@ void patch_modulator_click(int button, int state, int x, int y)
 void patch_modulator_special(int key, int x, int y)
 {
   int mi;
-  float f;
+  float f, oldf;
 
   /*
     left/right = change value by 1% of original value
@@ -571,22 +571,48 @@ void patch_modulator_special(int key, int x, int y)
   */
 
   mi=signalfifo[csynth][cphover];
-  switch(modModulatorTypes[mod[csynth][mi].type]) {
-    case 1: //float, value is already to scale
-      f=knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]);
-      if (key==GLUT_KEY_RIGHT) f+=0.01 * patch_modulator_floatval;
-      if (key==GLUT_KEY_LEFT) f-=0.01 * patch_modulator_floatval;
-      if (key==GLUT_KEY_UP) f+=0.1 * patch_modulator_floatval;
-      if (key==GLUT_KEY_DOWN) f-=0.1 * patch_modulator_floatval;
-      modvalue[ csynth ][cpatch[csynth]][ mi ]=knob_scale2float(mod[csynth][mi].scale, f);
-      sprintf(modeditbox, "%g", f);
-    break;
+  if (modModulatorTypes[mod[csynth][mi].type] == 1) { // float
+    f=knob_float2scale(mod[csynth][mi].scale, modvalue[ csynth ][cpatch[csynth]][ mi ]);
+    oldf=f;
+
+    // adjust float value    
+    if (key==GLUT_KEY_RIGHT) f+=0.01f * patch_modulator_floatval;
+    if (key==GLUT_KEY_LEFT)  f-=0.01f * patch_modulator_floatval;
+    if (key==GLUT_KEY_UP) f+=0.1f * patch_modulator_floatval;
+    if (key==GLUT_KEY_DOWN) f-=0.1f * patch_modulator_floatval;
     
-    case 2: //integer
-    break;
+    // sanity-check value before applying to the module
+    switch (mod[csynth][mi].scale)
+    {
+      case SCALE_RAW:
+        break;
+
+      case SCALE_RAMP:
+        if (f<=0.0) f=oldf;
+        break;
+        
+      case SCALE_FREQUENCY_HZ:
+      case SCALE_FREQUENCY_TEMPO:
+      case SCALE_DURATION:
+      case SCALE_DURATION_TEMPO:
+
+      case SCALE_PERCENTAGE:
+        if (f<0.0f) f=0.0f;
+        break;
+        
+      case SCALE_MIDI_NOTE:
+      case SCALE_NOTE_INTERVAL:
+        if (f>127.0) f=127.0f;
+        if (f<0.0) f=0.0f;
+        break;
+        
+      default:
+        break;
+    }
     
-    default:
-    break;
+    // apply value to module
+    modvalue[ csynth ][cpatch[csynth]][ mi ]=knob_scale2float(mod[csynth][mi].scale, f);
+    sprintf(modeditbox, "%g", f);
   }
 }
 
