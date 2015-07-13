@@ -20,6 +20,10 @@
 #define B_NEXTSYN 4
 #define B_PATCHNAME 5
 
+#define B_CUT 6
+#define B_COPY 7
+#define B_PASTE 8
+
 #define B_MOD_ADDPREC 0
 #define B_MOD_DECPREC 1
 #define B_MOD_VALUE   2
@@ -57,7 +61,7 @@ char pianokeys[36]={
 
 
 
-int patch_ui[6];
+int patch_ui[9];
 int modulator_ui[3];
 int cpkey=-1;
 int cphover=-1;
@@ -72,6 +76,12 @@ int cpatch[MAX_SYNTH]; // selected patch for each synth
 char patchname[MAX_SYNTH][MAX_PATCHES][128];
 float modvalue[MAX_SYNTH][MAX_PATCHES][MAX_MODULES];
 int modquantifier[MAX_SYNTH][MAX_PATCHES][MAX_MODULES];
+
+// "clipboard" for cut/copy/paste patches
+int patch_clipboard_synth; // which synth the is for (-1 if clipboard is empty)
+int patch_clipboard_modcount; // how many modulator values were copied
+float patch_clipboard_modvalue[MAX_MODULES];
+int patch_clipboard_quantifier[MAX_MODULES];
 
 float patch_modulator_floatval;
 int patch_modulator_intval;
@@ -96,6 +106,8 @@ void patch_init()
     }
   }
 
+  patch_clipboard_synth=-1;
+
   synth_stackify(csynth);
 }
 
@@ -113,6 +125,11 @@ void patch_mouse_hover(int x, int y)
   patch_ui[B_NEXT]=hovertest_box(x, y, 362,  DS_HEIGHT-14, 16, 16);
   patch_ui[B_PREVSYN]=hovertest_box(x, y, 14, DS_HEIGHT-14, 16, 16);
   patch_ui[B_NEXTSYN]=hovertest_box(x, y, 230, DS_HEIGHT-14, 16, 16);
+
+//  patch_ui[B_CUT]=hovertest_box(x, y, 600, DS_HEIGHT-14, 16, 16);
+  patch_ui[B_COPY]=hovertest_box(x, y, 622, DS_HEIGHT-14, 16, 16);
+  patch_ui[B_PASTE]=hovertest_box(x, y, 644, DS_HEIGHT-14, 16, 16);
+  if (patch_clipboard_synth<0 || patch_clipboard_synth!=csynth) patch_ui[B_PASTE]=0;
 
   // test patch name box
   patch_ui[B_PATCHNAME]&=0x06;
@@ -178,7 +195,7 @@ void patch_mouse_drag(int x, int y)
 
 void patch_mouse_click(int button, int state, int x, int y)
 {
-  int mi,mt,t;
+  int m,mi,mt,t;
 
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
@@ -211,7 +228,35 @@ void patch_mouse_click(int button, int state, int x, int y)
           synth_releaseaudio();
         }
         audio_loadpatch(0, csynth, cpatch[csynth]);      
-        return; }
+        return;
+      }
+      
+      if (patch_ui[B_COPY]) {
+        patch_clipboard_synth=csynth;
+        m=0;
+        while(signalfifo[csynth][m]>=0) {
+          mi=signalfifo[csynth][m];
+          memcpy(&patch_clipboard_modvalue[m], &modvalue[csynth][cpatch[csynth]][mi], sizeof(float));
+          patch_clipboard_quantifier[m]=modquantifier[csynth][cpatch[csynth]][mi];
+          m++;
+        }
+        patch_clipboard_modcount=m;
+        console_post("Patch copied to clipboard");
+      }
+      
+      if (patch_ui[B_PASTE] && patch_clipboard_synth>=0) {
+        if (patch_clipboard_synth >= 0 && patch_clipboard_synth==csynth) {
+          // paste modulator and quantifier settings
+          m=0;
+          while(signalfifo[csynth][m]>=0) {
+            mi=signalfifo[csynth][m];
+            memcpy(&modvalue[csynth][cpatch[csynth]][mi], &patch_clipboard_modvalue[m], sizeof(float));
+            modquantifier[csynth][cpatch[csynth]][mi]=patch_clipboard_quantifier[m];
+            m++;
+          }
+          console_post("Patch pasted from clipboard");
+        }
+      }
 
       if (patch_ui[B_PATCHNAME]) {
         // set keyboard focus
@@ -426,6 +471,17 @@ void patch_draw(void)
 
   // draw the ui elements on the patch page
   draw_textbox(472, DS_HEIGHT-14, 16, 180, patchname[csynth][cpatch[csynth]], patch_ui[B_PATCHNAME]);
+
+//  draw_button(600, DS_HEIGHT-14, 16, "X", patch_ui[B_CUT]);
+  draw_button(622, DS_HEIGHT-14, 16, "C", patch_ui[B_COPY]);
+  draw_button(644, DS_HEIGHT-14, 16, "V", patch_ui[B_PASTE]);
+  if (patch_clipboard_synth<0 || patch_clipboard_synth!=csynth) {
+    glColor4f(0,0,0,0.4f);
+    glBegin(GL_QUADS);
+    glVertex2f(644-8, (DS_HEIGHT-14)-8);  glVertex2f(644+8, (DS_HEIGHT-14)-8);
+    glVertex2f(644+8, (DS_HEIGHT-14)+8);  glVertex2f(644-8, (DS_HEIGHT-14)+8);
+    glEnd();
+  }
 
   draw_button(310, DS_HEIGHT-14, 16, "<<", patch_ui[B_PREV]);
   sprintf(tmps, "%02d", cpatch[csynth]);
