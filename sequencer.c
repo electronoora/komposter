@@ -449,7 +449,7 @@ void sequencer_mouse_click(int button, int state, int x, int y)
       if (seq_ui[B_SSHORTER]) { if (seqsonglen>1) seqsonglen--; return; }
       if (seq_ui[B_SLONGER]) { if (seqsonglen<(MAX_SONGLEN-1)) seqsonglen++; return; }
 
-      if (seq_ui[B_CLEAR]) { if (!seq_playing) { seq_render_start=-1; seq_render_end=-1; } return; }
+      if (seq_ui[B_CLEAR]) { if (!seq_playing) { seq_render_start=0; seq_render_end=0; } return; }
       if (seq_ui[B_REWIND]) {
         if (!seq_playing) {
           for(i=0,m=0,seq_render_start=0;i<seqsonglen;i++) for(j=0;j<seqch;j++) {
