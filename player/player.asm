@@ -19,7 +19,7 @@
 %define 	OUTPUTFREQ	44100
 
 ; how many samples of audio we're rendering
-%define		SONG_BUFFERLEN	75*OUTPUTFREQ
+%define		SONG_BUFFERLEN	15*OUTPUTFREQ
 
 ; maximum number of modules per synth. 64 means 256 bytes of modulator data per channel.
 %define		MAX_MODULES		64
@@ -53,6 +53,9 @@ midi0           dd      8.1757989156 ; C0
 midisemi        dd      1.059463094 ; ratio between notes a semitone apart
 
 ; small constants used around the code
+zero		dd	0.0
+one		dd	1.0
+minus_one	dd	-1.0
 half		dd	0.5
 threefourths	dd	0.75
 four		dd	4.0
@@ -154,13 +157,17 @@ render_song:
 	lodsw
 	and	al, al
         jz      .test_accent
-        fld     dword [midi0]
+;        fld     dword [midi0]
+movss xmm0, dword [midi0]
 .pitchmul:
-        fmul    dword [midisemi]
+;        fmul    dword [midisemi]
+mulss xmm0, dword [midisemi]
         dec     al
         jnz     .pitchmul
-        fdiv    dword [outputfreq]
-        fstp    dword [pitch+edx*4]
+;        fdiv    dword [outputfreq]
+divss xmm0, [outputfreq]
+;        fstp    dword [pitch+edx*4]
+movss [pitch+edx*4], xmm0
         mov     bl, [seqmask+edx]
 .test_accent:
 	xchg 	al, ah
@@ -204,6 +211,8 @@ render_song:
 .synth:
 	xor	edx, edx ; edx=voice
 	mov	[sample], edx ; set mixed sample to zero
+movss xmm7, dword [zero]
+
 .voice_loop:
 	; process the signal stack by looping through all the
 	; modules
@@ -270,6 +279,7 @@ render_song:
 
 	fadd	dword [sample]          ; mix previous channels in
 	fstp	dword [sample]          ; and pop back to temp storage
+
 	inc	edx			; next voice
 	cmp	edx, NUM_CHANNELS
 	jl	.voice_loop
@@ -279,6 +289,13 @@ render_song:
 	fld	dword SONGBSS(sample)
 	fmul	dword SONGDATA(samplemul)
 	fistp	word SONGBSS(songbuffer+ebx*2)
+
+;movss xmm7, dword [sample]
+;mulss xmm7, dword [samplemul]
+;cvtss2si edx, xmm7
+;shr edx, 16
+;mov word [songbuffer+ebx*2], dx
+
 	inc	ebx
 	cmp	ebx, SONG_BUFFERLEN
 	jl	.sample_loop

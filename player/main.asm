@@ -19,7 +19,7 @@
 %define OUTPUTFREQ 44100
 
 ; length of the data buffer - must be the same as in in player.asm
-%define SONG_BUFFERLEN 75*OUTPUTFREQ
+%define SONG_BUFFERLEN 15*OUTPUTFREQ
 
 ; openal constants
 %define AL_FORMAT_MONO16 0x1101
@@ -28,9 +28,8 @@
 
 
 extern _printf
-extern _alcOpenDevice
-extern _alcCreateContext
-extern _alcMakeContextCurrent
+
+extern _alutInit
 extern _alGenSources
 extern _alGenBuffers
 extern _alBufferData
@@ -38,6 +37,8 @@ extern _alSourcei
 extern _alSourcef
 extern _alSourcePlay
 
+extern _alcASASetListener
+extern _alcASASetSource
 
 ; these are from player.asm
 extern render_song
@@ -51,6 +52,9 @@ section .data
 initing db "rendering audio...",10,0
 playing db "playing..",10,0
 
+reverb	dd	1
+reverbsend dd __float32__(0.1)
+reverbtype dd 12
 
 
 %ifdef WRITE_TO_FILE
@@ -133,26 +137,8 @@ _start:
 	ret
 %endif
 
-        ; dev=alcOpenDevice(NULL);
-        sub     esp, 12
-        push    dword 0
-        call    _alcOpenDevice
-        add     esp, 16
-        mov     [dev], eax
-        
-        ; con=alcCreateContext(dev, NULL);
-        sub     esp, 8
-        push    dword 0
-        push    dword [dev]
-        call    _alcCreateContext
-        add     esp, 16
-        mov     [con], eax
-
-        ; alcMakeContextCurrent(con);
-        sub     esp, 12
-        push    dword [con]
-        call    _alcMakeContextCurrent
-        add     esp, 16
+	; alutInit();
+	call	_alutInit
 
         ; alGenSources(1, &source);
         sub     esp, 8
@@ -186,13 +172,31 @@ _start:
         call    _alSourcei
         add     esp, 16
 
-        ; alSourcef(sourceID, AL_GAIN, volume);
-        sub     esp, 4
-        push    dword __float32__(1.0)
-        push    dword AL_GAIN
-        push    dword [source]
-        call    _alSourcef
-        add     esp, 16
+	; add reverb?
+%if 0
+	;alcASASetListener(const ALuint property, ALvoid *data, ALuint dataSize);
+	sub 	esp, 4
+	push	dword 4
+	push 	reverb
+	push 	dword 'novr' ;'rvon'
+	call	_alcASASetListener
+	add	esp, 16
+
+	sub	esp, 4
+	push	dword 4
+	push	reverbtype
+	push	dword 'trvr'
+	call	_alcASASetListener
+	add	esp, 16
+
+	;alcASASetSource(const ALuint property, ALuint source, ALvoid *data, ALuint dataSize);
+	push	dword 4
+	push	reverbsend
+	push	dword [source]
+	push	dword 'lsvr' ;'rvsl'
+	call	_alcASASetSource
+	add	esp, 16
+%endif
 
         ; alSourcePlay(source);
         sub     esp, 12
