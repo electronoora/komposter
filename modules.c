@@ -91,7 +91,7 @@ int restart[MAX_SYNTH];
 // Descriptive names for all 16 module types
  char *modTypeNames[MODTYPES]=
 {
-	"CV",
+	"KBD CV",
 	"ENV",
 	"VCO",
 	"LFO",

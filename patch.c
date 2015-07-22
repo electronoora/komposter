@@ -24,6 +24,9 @@
 #define B_COPY 7
 #define B_PASTE 8
 
+#define B_OCTDN 9
+#define B_OCTUP 10
+
 #define B_MOD_ADDPREC 0
 #define B_MOD_DECPREC 1
 #define B_MOD_VALUE   2
@@ -36,6 +39,8 @@
 #define PIANO_BOTTOM	(PIANO_TOP+PIANO_HEIGHT+2)
 
 #define PATCHES_PER_COLUMN	30
+
+#define PIANO_OCTAVES 7
 
 extern int csynth;
 extern char synthname[MAX_SYNTH][128]; // from synthesizer.c
@@ -61,7 +66,7 @@ char pianokeys[36]={
 
 
 
-int patch_ui[9];
+int patch_ui[11];
 int modulator_ui[3];
 int cpkey=-1;
 int cphover=-1;
@@ -125,6 +130,9 @@ void patch_mouse_hover(int x, int y)
   patch_ui[B_NEXT]=hovertest_box(x, y, 362,  DS_HEIGHT-14, 16, 16);
   patch_ui[B_PREVSYN]=hovertest_box(x, y, 14, DS_HEIGHT-14, 16, 16);
   patch_ui[B_NEXTSYN]=hovertest_box(x, y, 230, DS_HEIGHT-14, 16, 16);
+
+  patch_ui[B_OCTDN]=hovertest_box(x, y, 17, 520-12, 16, 16);
+  patch_ui[B_OCTUP]=hovertest_box(x, y, DS_WIDTH-17, 520-12, 16, 16);
 
 //  patch_ui[B_CUT]=hovertest_box(x, y, 600, DS_HEIGHT-14, 16, 16);
   patch_ui[B_COPY]=hovertest_box(x, y, 622, DS_HEIGHT-14, 16, 16);
@@ -229,6 +237,13 @@ void patch_mouse_click(int button, int state, int x, int y)
         }
         audio_loadpatch(0, csynth, cpatch[csynth]);      
         return;
+      }
+      
+      if (patch_ui[B_OCTDN]) {
+        if (coct>0) { coct--; return; }
+      }
+      if (patch_ui[B_OCTUP]) {
+        if (coct<PIANO_OCTAVES) { coct++; return; }
       }
       
       if (patch_ui[B_COPY]) {
@@ -347,6 +362,16 @@ void patch_keyboard(unsigned char key, int x, int y)
     if (key==13) { patch_ui[B_PATCHNAME]&=0x03; patchkbfocus=-1; glutIgnoreKeyRepeat(1); }
     textbox_edit(patchname[csynth][cpatch[csynth]], key, 25);
     return;
+  }
+  
+  switch (key) {
+    case '-':
+      if (coct>0) { coct--; return; }
+      break;
+      
+    case '+':
+      if (coct<PIANO_OCTAVES) { coct++; return; }
+      break;
   }
 
   // keyjazzing! w00t!
@@ -470,6 +495,9 @@ void patch_draw(void)
   }
 
   // draw the ui elements on the patch page
+  draw_button(17, 520-12, 16, "-", patch_ui[B_OCTDN]);
+  draw_button(DS_WIDTH-17, 520-12, 16, "+", patch_ui[B_OCTUP]);
+
   draw_textbox(472, DS_HEIGHT-14, 16, 180, patchname[csynth][cpatch[csynth]], patch_ui[B_PATCHNAME]);
 
 //  draw_button(600, DS_HEIGHT-14, 16, "X", patch_ui[B_CUT]);
