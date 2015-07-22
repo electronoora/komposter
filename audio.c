@@ -346,7 +346,6 @@ int audio_process(short *buffer, long bufferlen)
       if (audiomode_flags&1) {
         playpos=0;
         oldtick=-1;
-        printf("starting pattern play...n");
       }
       audiomode_flags=0;
       
