@@ -32,6 +32,8 @@ int audiomode=AUDIOMODE_COMPOSING;
 int oldtick=-1;
 int audio_spinlock=0;
 int restarts=0;
+unsigned int audiomode_flags=0;
+
 
 int voicepatch[MAX_CHANNELS];
 
@@ -338,9 +340,16 @@ int audio_process(short *buffer, long bufferlen)
 
   // loop for each sample in buffer
   for(i=0;i<bufferlen;i++) {
-
     voice=0;    
     if (audiomode==AUDIOMODE_PATTERNPLAY) {
+
+      if (audiomode_flags&1) {
+        playpos=0;
+        oldtick=-1;
+        printf("starting pattern play...n");
+      }
+      audiomode_flags=0;
+      
       ticks=playpos / (OUTPUTFREQ/(bpm*256/60)); // calc tick from sample index
       pattpos=ticks>>6;
 

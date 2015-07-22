@@ -49,6 +49,7 @@ extern int gate[MAX_SYNTH];
 
 extern int audiomode; // from audio.c
 extern unsigned long playpos;
+extern unsigned int audiomode_flags;
 
 extern int bpm; // from sequencer.c
 
@@ -110,7 +111,11 @@ void pattern_toggleplayback()
   patt_ui[B_PATTPLAY]|=(patt_playing<<1);
   playpos=0;
   gate[0]=0;
-  if (patt_playing) { audiomode=AUDIOMODE_PATTERNPLAY; } else { audiomode=AUDIOMODE_COMPOSING; }
+  if (patt_playing) { 
+    audiomode=AUDIOMODE_PATTERNPLAY; audiomode_flags|=1;
+  } else {
+    audiomode=AUDIOMODE_COMPOSING;
+  }
 }
 
 
