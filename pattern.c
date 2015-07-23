@@ -25,7 +25,11 @@
 #define B_PATTPLAY 9
 #define B_PATTLOAD 10
 #define B_PATTSAVE 11
+
 #define B_PATTCLEAR 12
+
+#define B_COPY 13
+#define B_PASTE 14
 
 #define KB_WIDTH 40
 
@@ -71,9 +75,12 @@ extern int kpkeydown;
 unsigned long pattdata[MAX_PATTERN][MAX_PATTLENGTH];
 unsigned int pattlen[MAX_PATTERN];
 
+unsigned long patt_clipboard[MAX_PATTLENGTH];
+unsigned int patt_clipboard_len;
+
 int cpatt, coct;
 
-int patt_ui[13];
+int patt_ui[15];
 int piano_hover, piano_note, piano_drag, piano_dragto;
 int piano_start;
 int slide_hover;
@@ -99,6 +106,7 @@ void pattern_init()
   patt_cpatch=0;
   piano_porta_drag=-1; piano_porta_drag_len=0;
   for(i=0;i<13;i++) patt_ui[i]=0;
+  patt_clipboard_len=0;
 }
 
 
@@ -157,9 +165,11 @@ void pattern_mouse_hover(int x, int y)
   patt_ui[B_NEXTSYN]=hovertest_box(x, y, 430, DS_HEIGHT-14, 16, 16);
 
   patt_ui[B_PATTCLEAR]=hovertest_box(x, y, 555, DS_HEIGHT-14, 16, 16) | (patt_ui[B_PATTCLEAR]&8);
-/*
-  patt_ui[B_PATTSAVE]=hovertest_box(x, y, 585, DS_HEIGHT-14, 16, 16);
-*/
+
+  patt_ui[B_COPY]=hovertest_box(x,y,622, DS_HEIGHT-14, 16, 16);
+  patt_ui[B_PASTE]=hovertest_box(x,y,644, DS_HEIGHT-14, 16, 16);
+  if (patt_clipboard_len==0) patt_ui[B_PASTE]=0;
+
   patt_ui[B_PATTPLAY]=hovertest_box(x, y, 482, DS_HEIGHT-14, 16, 42);
   if (audiomode==AUDIOMODE_PATTERNPLAY) patt_ui[B_PATTPLAY]|=2;
 
@@ -225,7 +235,7 @@ void pattern_mouse_click(int button, int state, int x, int y)
   if (button==GLUT_LEFT_BUTTON) {
     if (state==GLUT_DOWN) {
 
-      // test first if modifiers are pressed
+      // test first if piano roll is clicked with modifiers
       m=glutGetModifiers();
       if (m==GLUT_ACTIVE_SHIFT) {
         if (piano_hover>=0 && piano_note==(pattdata[cpatt][piano_start+piano_hover]&0xff)) {
@@ -234,8 +244,8 @@ void pattern_mouse_click(int button, int state, int x, int y)
           while(pattdata[cpatt][i]&NOTE_LEGATO) i--;
           do { pattdata[cpatt][i++]=0;
           } while(pattdata[cpatt][i]&NOTE_LEGATO);
+          return;
         }
-        return;
       }
 
       // clear the pattern
@@ -257,13 +267,37 @@ void pattern_mouse_click(int button, int state, int x, int y)
       // click on the ui buttons
       if (patt_ui[B_PREV]) { if (cpatt>0) cpatt--; return; }
       if (patt_ui[B_NEXT]) { if (cpatt<MAX_PATTERN) cpatt++; return; }
+      
       if (patt_ui[B_SHORTER]) {
-        if (pattlen[cpatt]>1) pattlen[cpatt]/=2;
-        while (piano_start > 
-          ( 1+pattlen[cpatt]*16 - ( (DS_WIDTH-(PIANOROLL_X))/PIANOROLL_CELLWIDTH ) ) ) piano_start--;
-        if (piano_start<0) piano_start=0;
-        return; }
-      if (patt_ui[B_LONGER]) { if (pattlen[cpatt]<16) pattlen[cpatt]*=2; return; }
+        if (pattlen[cpatt]>1) {
+          // clear the pattern data no longer visible if shift down
+          m=glutGetModifiers();
+          if (m==GLUT_ACTIVE_SHIFT) {
+             for(i=((pattlen[cpatt]*16)/2); i<(pattlen[cpatt]*16); i++) pattdata[cpatt][i]=0;
+          }
+          
+          pattlen[cpatt]/=2;
+          
+          while (piano_start > 
+            ( 1+pattlen[cpatt]*16 - ( (DS_WIDTH-(PIANOROLL_X))/PIANOROLL_CELLWIDTH ) ) ) piano_start--;
+          if (piano_start<0) piano_start=0;
+        }
+        return;
+      }
+        
+      if (patt_ui[B_LONGER]) {
+        if (pattlen[cpatt]<16) {
+          pattlen[cpatt]*=2;
+
+          // duplicate first half of pattern to second half if shift pressed
+          m=glutGetModifiers();
+          if (m==GLUT_ACTIVE_SHIFT) {
+            for(i=0; i<((pattlen[cpatt]*16)/2); i++) pattdata[cpatt][i+((pattlen[cpatt]*16)/2)]=pattdata[cpatt][i];
+          }
+        }
+        return;
+      }
+      
       if (patt_ui[B_OCTDN]) { if (coct>0) coct--; return; }
       if (patt_ui[B_OCTUP]) { if (coct<(9-PIANOROLL_OCTAVES)) coct++; return; }
       if (patt_ui[B_PREVSYN]) { if (csynth[cpatch]>0) csynth[cpatch]--; 
@@ -274,6 +308,17 @@ void pattern_mouse_click(int button, int state, int x, int y)
         return; }
 
       if (patt_ui[B_PATTPLAY]&1) pattern_toggleplayback();
+      
+      if (patt_ui[B_COPY]) {
+        // copy pattern data to clipboard
+        for(i=0; i<pattlen[cpatt]*16; i++) patt_clipboard[i]=pattdata[cpatt][i];
+        patt_clipboard_len=pattlen[cpatt]*16;
+        console_post("Current pattern copied to clipboard");
+      }
+      
+      if (patt_ui[B_PASTE] && patt_clipboard_len>0) {
+        for(i=0; i<patt_clipboard_len; i++) pattdata[cpatt][i]=patt_clipboard[i];
+      }
       
       // click on the piano roll?
       if (piano_hover>=0) {
@@ -646,10 +691,17 @@ void pattern_draw(void)
   }
   draw_textbox(482, DS_HEIGHT-14, 16, 42, tmps, patt_ui[B_PATTPLAY]);
 
-  draw_button(555, DS_HEIGHT-14, 16, "C", patt_ui[B_PATTCLEAR]);
+  draw_button(555, DS_HEIGHT-14, 16, "X", patt_ui[B_PATTCLEAR]);
 
-/*
-  draw_button(585, DS_HEIGHT-14, 16, "S", patt_ui[B_PATTSAVE]);
-*/
+  draw_button(622, DS_HEIGHT-14, 16, "C", patt_ui[B_COPY]);
+  draw_button(644, DS_HEIGHT-14, 16, "V", patt_ui[B_PASTE]);
+  if (patt_clipboard_len==0) {
+    glColor4f(0,0,0,0.4f);
+    glBegin(GL_QUADS);
+    glVertex2f(644-8, (DS_HEIGHT-14)-8);  glVertex2f(644+8, (DS_HEIGHT-14)-8);
+    glVertex2f(644+8, (DS_HEIGHT-14)+8);  glVertex2f(644-8, (DS_HEIGHT-14)+8);
+    glEnd();
+  }
+  
 }
     
