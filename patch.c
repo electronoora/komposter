@@ -366,10 +366,12 @@ void patch_keyboard(unsigned char key, int x, int y)
   
   switch (key) {
     case '-':
+    case '<':
       if (coct>0) { coct--; return; }
       break;
       
     case '+':
+    case '>':
       if (coct<PIANO_OCTAVES) { coct++; return; }
       break;
   }
