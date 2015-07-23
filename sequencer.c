@@ -685,7 +685,7 @@ void sequencer_keyboard(unsigned char key, int x, int y)
     case 'c':
     case 'C':
     if (!seq_playing) {
-      seq_render_start=-1; seq_render_end=-1;
+      seq_render_start=0; seq_render_end=0;
     }
     break;
     
