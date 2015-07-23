@@ -1156,6 +1156,10 @@ void sequencer_pattern_click(int button, int state, int x, int y)
 
 void sequencer_pattern_keyboard(unsigned char key, int x, int y)
 {
+  if (key==27) {
+    dialog_close();
+    return; 
+  }
 }    
 
 
