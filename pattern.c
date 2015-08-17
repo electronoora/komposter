@@ -134,12 +134,19 @@ void pattern_toggleplayback()
 int pattern_cursorpos(int x, int y, int *note)
 {
   int cx,cy;
+  float lineheight;
+
+  if (((coct+PIANOROLL_OCTAVES)*12)<MAX_NOTE) {
+    lineheight=PIANOROLL_OCTAVES*12;
+  } else {
+    lineheight=PIANOROLL_OCTAVES*12 - (((coct+PIANOROLL_OCTAVES)*12)-MAX_NOTE);
+  }
 
   if (
       x >  PIANOROLL_X  &&
       x < (PIANOROLL_X + (pattlen[cpatt]*16)*PIANOROLL_CELLWIDTH + 1) &&
       y < PIANOROLL_Y  + 3 &&
-      y > (PIANOROLL_Y + 1 - (PIANOROLL_OCTAVES*12)*PIANOROLL_CELLHEIGHT)
+      y > (PIANOROLL_Y + 1 - lineheight*PIANOROLL_CELLHEIGHT)
      )
   {
     cx=(int)((x-PIANOROLL_X)/PIANOROLL_CELLWIDTH)-1;
@@ -299,7 +306,8 @@ void pattern_mouse_click(int button, int state, int x, int y)
       }
       
       if (patt_ui[B_OCTDN]) { if (coct>0) coct--; return; }
-      if (patt_ui[B_OCTUP]) { if (coct<(9-PIANOROLL_OCTAVES)) coct++; return; }
+      if (patt_ui[B_OCTUP]) { if (coct<MAX_OCTAVE) coct++; return; }
+      
       if (patt_ui[B_PREVSYN]) { if (csynth[cpatch]>0) csynth[cpatch]--; 
         audio_loadpatch(0, csynth, cpatch[csynth]);        
         return; }
@@ -493,16 +501,18 @@ void pattern_draw(void)
   char tmps[256];
   long ticks;
   int rkdown;
+  float lineheight;
 
   // draw keyboard, highlight a note if cursor is on piano roll
   rkdown=-1;
   if (piano_drag>=0) rkdown=piano_drag;
   if (kpkeydown>=0) rkdown=kpkeydown;  
   for(i=0;i<PIANOROLL_OCTAVES;i++)
-    draw_kboct(round(PIANOROLL_Y-(12*PIANOROLL_CELLHEIGHT*i)), 40, 12, coct+i, piano_note, rkdown);   
+    if ((coct+i)<10)draw_kboct(round(PIANOROLL_Y-(12*PIANOROLL_CELLHEIGHT*i)), 40, 12, coct+i, piano_note, rkdown);   
 
   // divider lines for notes
   for(j=0;j<(PIANOROLL_OCTAVES*12+1);j++) {
+    if (coct*12+j > MAX_NOTE) continue;
     glColor4f(0.3, 0.3, 0.3, 0.8);
     if ((j%12)==0)  glColor4f(0.5, 0.5, 0.5, 0.8);
     glEnable(GL_LINE_STIPPLE);
@@ -515,6 +525,12 @@ void pattern_draw(void)
   }  
   
   // draw markers for beats and 1/16th notes
+  if (((coct+PIANOROLL_OCTAVES)*12)<MAX_NOTE) {
+    lineheight=PIANOROLL_OCTAVES*12;
+  } else {
+    lineheight=PIANOROLL_OCTAVES*12 - (((coct+PIANOROLL_OCTAVES)*12)-MAX_NOTE);
+  }
+  lineheight*=PIANOROLL_CELLHEIGHT;
   for(i=0,j=piano_start;j<(pattlen[cpatt]*16+1);i++,j++) {
     glColor4f(0.2, 0.2, 0.2, 0.8);
     if ((j%4)==0) {
@@ -531,7 +547,7 @@ void pattern_draw(void)
     glLineStipple(1, 0xaaaa);
     glBegin(GL_LINES);
     glVertex2f(PIANOROLL_X+i*PIANOROLL_CELLWIDTH, round(PIANOROLL_Y+PIANOROLL_CELLHEIGHT));
-    glVertex2f(PIANOROLL_X+i*PIANOROLL_CELLWIDTH, round(PIANOROLL_Y-((PIANOROLL_OCTAVES*12)*PIANOROLL_CELLHEIGHT)));
+    glVertex2f(PIANOROLL_X+i*PIANOROLL_CELLWIDTH, round(PIANOROLL_Y-lineheight)); //(PIANOROLL_OCTAVES*12)*PIANOROLL_CELLHEIGHT)));
     glEnd();
     glDisable(GL_LINE_STIPPLE);
   }

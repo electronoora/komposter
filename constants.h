@@ -38,3 +38,6 @@
 // audio output frequency
 #define OUTPUTFREQ 44100
 
+// highest note and octave shown
+#define MAX_OCTAVE 8
+#define MAX_NOTE 119

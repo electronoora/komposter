@@ -243,7 +243,7 @@ void patch_mouse_click(int button, int state, int x, int y)
         if (coct>0) { coct--; return; }
       }
       if (patch_ui[B_OCTUP]) {
-        if (coct<PIANO_OCTAVES) { coct++; return; }
+        if (coct<MAX_OCTAVE) { coct++; return; }
       }
       
       if (patch_ui[B_COPY]) {
@@ -372,7 +372,7 @@ void patch_keyboard(unsigned char key, int x, int y)
       
     case '+':
     case '>':
-      if (coct<PIANO_OCTAVES) { coct++; return; }
+      if (coct<MAX_OCTAVE) { coct++; return; }
       break;
   }
 
