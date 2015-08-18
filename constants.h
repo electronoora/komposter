@@ -32,7 +32,7 @@
 #define MAX_PATTLENGTH 256
 
 // sequencer limits
-#define MAX_CHANNELS 24
+#define MAX_CHANNELS 16
 #define MAX_SONGLEN 768
 
 // audio output frequency

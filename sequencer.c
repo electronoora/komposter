@@ -56,8 +56,8 @@
 
 #define SEQUENCER_Y 14.5
 #define SEQUENCER_X 45.5
-#define SEQUENCER_CELLWIDTH 14
-#define SEQUENCER_CELLHEIGHT 14
+#define SEQUENCER_CELLWIDTH 24
+#define SEQUENCER_CELLHEIGHT 24
 
 // file dialogs
 #define FD_SAVE 0
@@ -780,7 +780,7 @@ void sequencer_draw(void)
             glVertex2f( sx+1,    SEQUENCER_Y+(1+i)*SEQUENCER_CELLHEIGHT-1 );
             glEnd();        
             sprintf(tmps, "%02d", seq_pattern[i][j]);
-            render_text(tmps, sx+1, SEQUENCER_Y+i*SEQUENCER_CELLHEIGHT+10, 2, 0x80c0c0c0, 0);
+            render_text(tmps, sx+1.5, SEQUENCER_Y+(i+1)*SEQUENCER_CELLHEIGHT-((SEQUENCER_CELLHEIGHT-14)/2), 2, 0x80c0c0c0, 0);
             glColor4f(0.68, 0.33, 0.0, 1.0);
             if (osl==sl) {
               glBegin(GL_LINE_LOOP);
@@ -992,9 +992,9 @@ void sequencer_draw(void)
       glEnd();
     }
     if (j==seq_hover_ch) {
-      render_text(tmps, 5, SEQUENCER_Y+10.5+SEQUENCER_CELLHEIGHT*j, 2, 0xffad5400, 0);  
+      render_text(tmps, 5, SEQUENCER_Y+10.5+SEQUENCER_CELLHEIGHT*j+((SEQUENCER_CELLHEIGHT-14)/2), 2, 0xffad5400, 0);  
     } else {
-      render_text(tmps, 5, SEQUENCER_Y+10.5+SEQUENCER_CELLHEIGHT*j, 2, 0xffc0c0c0, 0);  
+      render_text(tmps, 5, SEQUENCER_Y+10.5+SEQUENCER_CELLHEIGHT*j+((SEQUENCER_CELLHEIGHT-14)/2), 2, 0xffc0c0c0, 0);  
     }
   }
   if (seq_chlabel_hover==255) {
@@ -1068,7 +1068,7 @@ void sequencer_draw_pattern(void)
   char tmps[128];
 
   draw_textbox((DS_WIDTH/2), (DS_HEIGHT/2), 150, 240, "", 0);
-  if (seq_add_editmode) { sprintf(tmps, "Edit pattern (ch%02d)",seq_hover_ch+1); } else { sprintf(tmps, "Add pattern (ch%02d)", seq_hover_ch+1); }
+  if (seq_add_editmode) { sprintf(tmps, "Edit pattern (ch %02d)",seq_hover_ch+1); } else { sprintf(tmps, "Add pattern (ch %02d)", seq_hover_ch+1); }
   render_text(tmps, (DS_WIDTH/2)-116, (DS_HEIGHT/2)-62, 0, 0xffb05500, 0);
   render_text("right click to close", (DS_WIDTH/2)+6, (DS_HEIGHT/2)+85, 2, 0xffc0c0c0, 0);
 

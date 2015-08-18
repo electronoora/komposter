@@ -365,7 +365,7 @@ void draw_kboct(float y, float kw, float kh, int oct, int hlkey, int hlkeydown)
   for(i=0;i<5;i++) { // black keys
     j=i; if (i>1) j+=1;
     glBegin(GL_QUADS);
-    if (ckey==hlkey) { glColor4f(0.18, 0.18, 0.18, 1.0);
+    if (ckey==hlkey) { glColor4f(0.28, 0.28, 0.28, 1.0);
     } else { glColor4f(0.0, 0.0, 0.0, 1.0); }
     if (ckey==hlkeydown) { glColor4f(0.68f, 0.33f, 0.0f, 0.94f); }
     glVertex2f(2, y-(j+0.5)*kh-(0.2*kh));
@@ -430,7 +430,7 @@ void draw_kbhoct(float x, float y, float kw, float kh, int oct, int hlkey, int h
   for(i=0;i<5;i++) { // black keys
     j=i; if (i>1) j+=1;
     glBegin(GL_QUADS);
-    if (ckey==hlkey) { glColor4f(0.18, 0.18, 0.18, 1.0);
+    if (ckey==hlkey) { glColor4f(0.28, 0.28, 0.28, 1.0);
     } else { glColor4f(0.0, 0.0, 0.0, 1.0); }
     if (ckey==hlkeydown) { glColor4f(0.68f, 0.33f, 0.0f, 0.94f); }
     glVertex2f(x+j*kw+(0.7*kw), y);

@@ -71,6 +71,9 @@ extern char pianokeys[29];
 extern int kpkeydown;
 
 
+// black or white key
+const unsigned char keycolor[12]={1,0,1,0,1,1,0,1,0,1,0,1};
+
 
 unsigned long pattdata[MAX_PATTERN][MAX_PATTLENGTH];
 unsigned int pattlen[MAX_PATTERN];
@@ -510,9 +513,24 @@ void pattern_draw(void)
   for(i=0;i<PIANOROLL_OCTAVES;i++)
     if ((coct+i)<10)draw_kboct(round(PIANOROLL_Y-(12*PIANOROLL_CELLHEIGHT*i)), 40, 12, coct+i, piano_note, rkdown);   
 
-  // divider lines for notes
+  // backgrounds and divider lines for note grid
   for(j=0;j<(PIANOROLL_OCTAVES*12+1);j++) {
     if (coct*12+j > MAX_NOTE) continue;
+
+     if (keycolor[j%12]) {
+       glColor4ub(0x20, 0x20, 0x20, 0xff);
+     } else {
+       glColor4ub(0x00, 0x00, 0x00, 0xff);
+     }
+     glBegin(GL_QUADS);
+       glVertex2f(PIANOROLL_X,                                                     PIANOROLL_Y-(j*PIANOROLL_CELLHEIGHT));
+       glVertex2f(PIANOROLL_X+(pattlen[cpatt]*16-piano_start)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-(j*PIANOROLL_CELLHEIGHT));     
+       glVertex2f(PIANOROLL_X+(pattlen[cpatt]*16-piano_start)*PIANOROLL_CELLWIDTH, PIANOROLL_Y-((j+1)*PIANOROLL_CELLHEIGHT));     
+       glVertex2f(PIANOROLL_X,                                                     PIANOROLL_Y-((j+1)*PIANOROLL_CELLHEIGHT));          
+     glEnd();    
+
+    
+    
     glColor4f(0.3, 0.3, 0.3, 0.8);
     if ((j%12)==0)  glColor4f(0.5, 0.5, 0.5, 0.8);
     glEnable(GL_LINE_STIPPLE);
