@@ -1277,6 +1277,7 @@ void sequencer_draw_render(void)
 
   if (render_state==RENDER_COMPLETE) {
 //if (render_pos > (0.3*render_bufferlen)) {
+    audio_exportwav();
     dialog_close();
     dialog_open(&sequencer_draw_preview, &sequencer_preview_hover, &sequencer_preview_click);
     dialog_bindkeyboard(&sequencer_preview_keyboard);            
@@ -1406,7 +1407,10 @@ void sequencer_draw_preview(void)
   sprintf(tmps, "%6.2f s", s);  
   draw_button((DS_WIDTH/2)-40, (DS_HEIGHT/2)+92, 16, "i<", seq_ui[B_PREVIEW_REWIND]);
   draw_textbox((DS_WIDTH/2), (DS_HEIGHT/2)+92, 16, 52, tmps, seq_ui[B_PREVIEW_PLAY]);  
+  
+/*
   draw_button((DS_WIDTH/2)+100, (DS_HEIGHT/2)+92, 16, "w", seq_ui[B_PREVIEW_EXPORT]);
+*/
 }
 
 
@@ -1416,7 +1420,9 @@ void sequencer_preview_hover(int x, int y)
   seq_ui[B_PREVIEW_PLAY]=hovertest_box(x, y, (DS_WIDTH/2), (DS_HEIGHT/2)+92, 16, 52);
   if (render_state==RENDER_PLAYBACK) seq_ui[B_PREVIEW_PLAY]|=2;
 
+/*
   seq_ui[B_PREVIEW_EXPORT]=hovertest_box(x, y, (DS_WIDTH/2)+100, (DS_HEIGHT/2)+92, 16, 16);
+*/
   
   // hovering on render preview
   seq_render_hover=-1;
@@ -1443,11 +1449,13 @@ void sequencer_preview_click(int button, int state, int x, int y)
       }
       if (seq_ui[B_PREVIEW_REWIND]) { render_playpos=0; return; }
 
+/*
       // wav dump button
       if (seq_ui[B_PREVIEW_EXPORT]) { 
         audio_exportwav();
         return;
       }
+*/
       
       if (seq_render_hover>=0) { render_playpos=seq_render_hover; return; }
     }
