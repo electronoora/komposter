@@ -21,4 +21,6 @@ void about_draw(void);
 void about_hover(int x, int y);
 void about_click(int button, int state, int x, int y);
 
+void about_keyboard(unsigned char key, int x, int y);
+
 #endif

@@ -6,9 +6,9 @@ NASM_PARAMS=-f elf32 -w+orphan-labels
 AL_LD_PARAMS=-e _start -lc -shared --oformat elf32-i386
 endif
 ifeq ($(UNAME), Darwin)
-GCC_PARAMS=-DMACOSX -Os -fomit-frame-pointer -ffast-math -Wall -fpack-struct -I/opt/local/include
+GCC_PARAMS=-m32 -DMACOSX -Os -fomit-frame-pointer -ffast-math -Wall -fpack-struct -I/opt/local/include
 NASM_PARAMS=-f macho -DMACOSX -w+orphan-labels
-AL_LD_PARAMS=-e _start -framework OpenAL -lc
+AL_LD_PARAMS=-m32 -e _start -framework OpenAL -lc
 endif
 
 OBJS=main.o player.o
@@ -22,7 +22,7 @@ DEBUG=-O2
 	nasm $(NASM_PARAMS) $(DEBUG) $(FEATURES) $<
 
 player: $(OBJS)
-	ld $(AL_LD_PARAMS) -o player main.o player.o
+	gcc $(AL_LD_PARAMS) -o player main.o player.o
 	strip player
 
 pcompr:

@@ -133,7 +133,7 @@ void mouse_clickfunc(int button, int state, int x, int y)
       if (main_ui[MAIN_PAGE2]) { console_post("Patches");      cpage=2; return; }      
       if (main_ui[MAIN_PAGE3]) { console_post("Patterns");     cpage=3; return; }
       if (main_ui[MAIN_PAGE4]) { console_post("Sequencer");    cpage=4; return; }
-      if (main_ui[MAIN_ABOUT]) { dialog_open(&about_draw, &about_hover, &about_click); return; }
+      if (main_ui[MAIN_ABOUT]) { dialog_open(&about_draw, &about_hover, &about_click); dialog_bindkeyboard(&about_keyboard); return; }
       if (main_ui[MAIN_VU]) { audio_peak=0.0f; console_post("VU meter peak reset"); return; }
     }
   }
@@ -417,6 +417,7 @@ int main(int argc, char **argv)
   glutDisplayFunc(display);
   glutTimerFunc(20, update, 1);
   dialog_open(&about_draw, &about_hover, &about_click);
+  dialog_bindkeyboard(&about_keyboard);
 
   // start audio and opengl mainloop
   atexit(cleanup);

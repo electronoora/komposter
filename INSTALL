@@ -7,8 +7,8 @@ Building Komposter and example player in Mac OS X:
   player.
 
 - Edit Makefile.darwin and make sure the path to Mac OS X SDK is
-  correct. It's recommended to use 10.6 SDK although you may be
-  able to build on 10.5 or 10.7 as well.
+  correct. It's recommended to use 10.11 SDK although you may be
+  able to build on older ones as well.
 
 - Type 'make -f Makefile.darwin dist' to build the distribution
   dmg-file. If you want to only build the application bundle, use

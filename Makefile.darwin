@@ -6,8 +6,8 @@
 
 VERSION=2.2b-r32
 
-# Set the location of your OS X 10.9 SDK
-SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
+# Set the location of your OS X 10.11 SDK
+SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
 
 CC=gcc
 INSTALL_PATH_BIN=/Applications

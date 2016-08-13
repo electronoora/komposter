@@ -35,3 +35,8 @@ void about_click(int button, int state, int x, int y)
   if (state==GLUT_DOWN) { dialog_close(); return; }
 }
 
+
+void about_keyboard(unsigned char key, int x, int y)
+{
+  if (key==27 || key==' ' || key==13) { glutIgnoreKeyRepeat(1); dialog_close(); return; }
+}
