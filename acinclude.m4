@@ -278,13 +278,6 @@ AC_DEFUN([AC_COMPILE_MODE],
 		optimizations=[no]
 	fi
 
-	if test "x$CC" = "x" ; then
-		AC_DEFUN([AC_PROG_CC], [])
-	fi
-	if test "x$CXX" = "x" ; then
-		AC_DEFUN([AC_PROG_CXX], [])
-	fi
-
 	AC_CONDITIONAL_DEFINE([$1], [$debug])
 
 	if test x$debug != xno ; then
