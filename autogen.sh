@@ -22,5 +22,5 @@ diff_copy()
 
 diff_copy ${ACINCLUDE} acinclude.m4
 diff_copy ${AUTOGEN} autogen.sh
-autoreconf -v
+autoreconf -v -I m4
 exit 0
