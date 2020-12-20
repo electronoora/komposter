@@ -6,7 +6,7 @@ EXTRA_DIST = doc/ \
 						 player/ \
 						 resources/
 
-AM_CPPFLAGS = -DRESOURCEPATH=\"$(prefix)/share/komposter\"
+AM_CPPFLAGS = -DRESOURCEPATH=\"$(prefix)/share/komposter/\"
 
 komposter_SOURCES = about.c \
 										audio.c \
