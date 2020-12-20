@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Komposter
+GenericName=Lightweight music composing system
+Comment=Lightweight music composing system
+Icon=komposter_icon.png
+Exec=komposter
+Categories=Audio;
+StartupNotify=false
