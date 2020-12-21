@@ -55,6 +55,15 @@ make
 make install
 ```
 
+### Installing via package
+
+#### FreeBSD
+
+On FreeBSD a package can be installed with the following command:
+
+```
+pkg install komposter
+```
 
 
 ### Examples
